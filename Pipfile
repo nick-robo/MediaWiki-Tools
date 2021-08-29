@@ -12,6 +12,7 @@ ipython = "*"
 pytest = "*"
 ipykernel = "*"
 autopep8 = "*"
+pytest-cov = "*"
 
 [requires]
 python_version = "3.9"
