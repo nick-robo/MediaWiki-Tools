@@ -1,4 +1,3 @@
-import pytest
 from app.functions import get_set, get_***REMOVED***s
 from functools import reduce
 
