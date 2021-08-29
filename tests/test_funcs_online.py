@@ -81,7 +81,7 @@ def test_get_***REMOVED***s_subcats():
     cat = 'https://www.***REMOVED***pedia.com/***REMOVED***s/Category:Eurasian'
 
     links = get_***REMOVED***s(category=cat, get_subcats=False)
-    assert '/***REMOVED***s/Kassi_Nova' not in links
+    assert '/***REMOVED***s/Kassi_Nova' not in links and '/***REMOVED***s/Adriana_Luna' in links
 
     links = get_***REMOVED***s(category=cat, get_subcats=True)
-    assert '/***REMOVED***s/Kassi_Nova' in links
+    assert '/***REMOVED***s/Kassi_Nova' in links and '/***REMOVED***s/Adriana_Luna' in links
