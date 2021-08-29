@@ -55,7 +55,9 @@ def test_get_set_union2():
 
 def test_get_***REMOVED***s_subcats():
     cat = 'https://www.***REMOVED***pedia.com/***REMOVED***s/Category:Eurasian'
+    
+    links = get_***REMOVED***s(category=cat, get_subcats=False)
+    assert '/***REMOVED***s/Kassi_Nova' not in links
+    
     links = get_***REMOVED***s(category=cat, get_subcats=True)
-
-    assert ['/***REMOVED***s/' + x for x in ['Azra_Akin',
-                                    'Kassi_Nova', 'Leyla_Stacked']] in links
+    assert '/***REMOVED***s/Kassi_Nova' in links
