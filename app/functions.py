@@ -130,20 +130,3 @@ def get_set(categories: Union[list[str], str], operation: str,
 
     return list(***REMOVED***_set)
 
-
-# %%
-# escorts = get_***REMOVED***s('https://www.***REMOVED***pedia.com/***REMOVED***s/Category:Escorts')
-# it = get_***REMOVED***s('https://www.***REMOVED***pedia.com/***REMOVED***s/Category:Italian', True)
-
-# # %%
-# it_escorts = set(escorts).intersection(it)
-# print(it_escorts)
-
-cats = [
-    'https://www.***REMOVED***pedia.com/***REMOVED***s/Category:1968_births',
-    'https://www.***REMOVED***pedia.com/***REMOVED***s/Category:Italian'
-]
-
-result_get_set = get_set(categories=cats, operation='intersection')
-
-# %%

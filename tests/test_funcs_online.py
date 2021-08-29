@@ -53,11 +53,35 @@ def test_get_set_union2():
     assert len(result_naive ^ result_function) == 0
 
 
+def test_get_set_list_input():
+
+    cat = 'https://www.***REMOVED***pedia.com/***REMOVED***s/Category:Turkish'
+    link_list = ['/***REMOVED***s/Steve', '/***REMOVED***s/Bob']
+
+    result_naive = set(get_***REMOVED***s(cat))
+    result_func = set(get_set(
+        categories=cat, operation='union', ***REMOVED***s_list=link_list
+    ))
+
+    assert len((result_naive | set(link_list)) ^ result_func) == 0
+
+    link_list = ['/***REMOVED***s/Priscilla_Aydin', '/***REMOVED***s/Meral_Ertunc']
+
+    result_func = set(
+        get_set(
+            categories=cat, operation='intersection',
+            ***REMOVED***s_list=link_list
+        )
+    )
+
+    assert len((result_naive & set(link_list)) ^ result_func) == 0
+
+
 def test_get_***REMOVED***s_subcats():
     cat = 'https://www.***REMOVED***pedia.com/***REMOVED***s/Category:Eurasian'
-    
+
     links = get_***REMOVED***s(category=cat, get_subcats=False)
     assert '/***REMOVED***s/Kassi_Nova' not in links
-    
+
     links = get_***REMOVED***s(category=cat, get_subcats=True)
     assert '/***REMOVED***s/Kassi_Nova' in links
