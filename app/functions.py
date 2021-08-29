@@ -3,8 +3,6 @@ import requests
 from bs4 import BeautifulSoup
 from typing import Callable, Optional, Union
 import re
-import io
-from urllib.parse import urlparse
 
 
 def get_data(page) -> BeautifulSoup:
@@ -29,9 +27,9 @@ def get_***REMOVED***s(category: str, get_subcats: bool = False,
     next_page = list(filter(lambda x: x.text == 'next page', links))
 
     # get ***REMOVED***s from subcats
-    if get_subcats and (subcats := data.find(id='mw-subcategories')) is not None:
-        subcats = data.find(id='mw-subcategories')
-        for link in subcats.find_all('a'):
+    if get_subcats and (s := data.find(id='mw-subcategories')) is not None:
+        s = data.find(id='mw-subcategories')
+        for link in s.find_all('a'):
             if (href := link.get('href')) is not None and 'Category' in href:
                 ***REMOVED***s.extend(get_***REMOVED***s(base_url + href))
 
@@ -61,10 +59,11 @@ def get_active(***REMOVED***s: list[str]) -> list[str]:
     """Finds active models
 
     Args:
-        ***REMOVED***s (list): A list in the format ['/***REMOVED***s/Model_A', '/***REMOVED***s/Model_B', ...]
+        ***REMOVED***s (list): A list in the format ['/***REMOVED***s/Model_A',
+                                            '/***REMOVED***s/Model_B', ...]
 
     Returns:
-        list: A list of active models 
+        list: A list of active models
     """
 
     active_***REMOVED***s = []
@@ -92,7 +91,6 @@ def get_active(***REMOVED***s: list[str]) -> list[str]:
                 continue
             else:
                 pass
-                #print(f'Error spliting: {years}')
 
     return active_***REMOVED***s
 
@@ -102,11 +100,14 @@ def get_active(***REMOVED***s: list[str]) -> list[str]:
 
 
 def get_set(categories: Union[list[str], str], operation: str,
-            ***REMOVED***s_list: Optional[list[str]] = None, get_subcats: bool = False) -> list:
+            ***REMOVED***s_list: Optional[list[str]] = None,
+            get_subcats: bool = False) -> list:
 
     if operation not in ['union', 'intersection']:
         raise Exception(
-            "Invalid operation, chose from following: ['union','intersection']")
+            f"Invalid operation: {operation} \
+              chose from following: ['union','intersection']"
+        )
 
     ***REMOVED***_set = set()
     operator = 'update' if operation == 'union' else 'intersection_update'
@@ -129,4 +130,3 @@ def get_set(categories: Union[list[str], str], operation: str,
         getattr(***REMOVED***_set, operator)(***REMOVED***s_list)
 
     return list(***REMOVED***_set)
-
