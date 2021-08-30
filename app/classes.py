@@ -3,7 +3,8 @@ import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
 import re
-from typing import Callable, Union, Optional
+from typing import Callable, Union
+from itertools import combinations
 
 
 class WikiSubsetter:
@@ -78,8 +79,8 @@ class WikiSubsetter:
         return BeautifulSoup(page.text, 'html.parser')
 
     def get_pages(self, input_link: str, get_subcats: bool = False,
-                  get_lists: bool = False, recursive: bool = False
-                  ) -> list[str]:
+                  get_lists: bool = False, recursive: bool = False,
+                  list_only: bool = False) -> list[str]:
         """Get the pages from a category or list of the wiki.
 
         Args:
@@ -94,6 +95,9 @@ class WikiSubsetter:
             recursive (bool, optional): Recursively get links from
             subcategories. Defaults to False.
 
+            list_only (bool, optional): Only get links that are lists.
+            Defaults to False.
+
         Returns:
             list[str]: A list of pages.
         """
@@ -105,7 +109,7 @@ class WikiSubsetter:
         content = data.find(id='mw-pages')
         is_category = True if content else False
 
-        if is_category:
+        if is_category and not list_only:
             links = data.find_all('a')
 
             next_page = list(filter(lambda x: x.text == 'next page', links))
@@ -137,6 +141,11 @@ class WikiSubsetter:
                 filter_links,
                 map(lambda x: x.get('href'), content.find_all('a'))
             )
+        # get lists only
+        elif is_category:
+            # assumption: all lists are on first page (>200 lists)
+            links = [h for x in content.find_all('a')
+                     if (h := x.get('href')) and 'List_' in h]
         # if input_link is list
         else:
             content = data.find(id="mw-content-text").find_all('a')
@@ -148,8 +157,8 @@ class WikiSubsetter:
         return list(set(pages))
 
     def get_set(self, categories: Union[list[str], str], operation: str,
-                pages_list: Optional[list[str]] = None,
-                get_subcats: bool = False) -> list[str]:
+                pages_list: list[str] = [], get_subcats: bool = False,
+                use_lists: bool = False) -> list[str]:
 
         if operation not in ['union', 'intersection']:
             raise Exception(
@@ -160,8 +169,39 @@ class WikiSubsetter:
         page_set = set()
         operator = 'update' if operation == 'union' else 'intersection_update'
 
+        # use lists to increase efficiency
+        if use_lists and operation == 'intersection' and len(categories) > 1:
+            combs = combinations(categories, 2)
+            for comb in combs:
+                # skip if both categories have been intersected
+                if all([x not in categories for x in comb]):
+                    continue
+                lists = self.get_pages(comb[0], list_only=True)
+                # replace underscore and remove plural ([:-1])
+                # assumption: categories are english
+                s = comb[1].replace('_', ' ').lower()
+                s = s[:-1] if s[-1] == 's' else s
+                # match category string s in lists
+                lists = [x for x in lists
+                         if s in x.lower().replace('_', ' ')]
+                if lists:
+                    # if list is not empty get links from the first one
+                    # (should always be one result)
+                    list_link = lists[0].split('/')[-1]
+                    list_pages = self.get_pages(list_link)
+                    # if page_list is not empty, intersect
+                    if pages_list:
+                        pages_list = set(pages_list).intersection(list_pages)
+                    else:
+                        pages_list.extend(list_pages)
+                    # remove list items from categories
+                    categories.remove(comb[0])
+                    categories.remove(comb[1])
+            if not categories:
+                return list(pages_list)
+
         # edge cases
-        if len(categories) == 0:
+        if not categories:
             raise Exception('Invalid argument')
         elif len(categories) == 1:
             page_set.update(self.get_pages(categories[0]))
@@ -173,7 +213,7 @@ class WikiSubsetter:
                     page_set.update(self.get_pages(category, get_subcats))
                     continue
                 getattr(page_set, operator)(
-                    self.get_pages(category, self.get_subcats))
+                    self.get_pages(category, get_subcats))
 
         if pages_list is not None:
             getattr(page_set, operator)(pages_list)
@@ -183,6 +223,11 @@ class WikiSubsetter:
 
 
 ws = WikiSubsetter('www.***REMOVED***pedia.com')
-print(ws.get_pages('List_of_amazon_Latinas'))
+cats = ['Amazons', 'Italian']
+result_list = ws.get_set(cats, 'intersection', use_lists=True)
+result_naive = ws.get_set(cats, 'intersection')
+
+# %%
+assert not set(result_naive) ^ set(result_list)
 
 # %%
