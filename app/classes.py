@@ -130,6 +130,8 @@ class WikiSubsetter:
         """
 
         if self.has_api:
+            # TODO: Figure out method for lists
+
             pages, subcats = self.mw.categorymembers(
                 re.split('/|:', input_link)[-1],
                 results=None
@@ -142,6 +144,11 @@ class WikiSubsetter:
                             recursive=recursive
                         )
                     )
+
+            if not get_lists:
+                pages = [p for p in pages if 'List ' not in p]
+            if list_only:
+                pages = [p for p in pages if 'List ' in p]
 
             return pages
 
