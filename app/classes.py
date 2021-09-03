@@ -5,8 +5,8 @@ from urllib.parse import urlparse
 import re
 from typing import Callable, Union
 from itertools import combinations
-import mwparserfromhell as mwp
-from mediawiki import MediaWiki 
+# import mwparserfromhell as mwp
+from mediawiki import MediaWiki
 
 
 class WikiSubsetter:
@@ -29,7 +29,7 @@ class WikiSubsetter:
         if not len(self.parsed_url.netloc.split(".")) > 1:
             raise ValueError(f'Invalid url: {input_url}')
 
-        # get base url 
+        # get base url
         self.base_url = self.parsed_url._replace(
             path='', params='', fragment=''
         ).geturl()
@@ -89,7 +89,6 @@ class WikiSubsetter:
             self.mw = None
             self.has_api = False
             self.api_url = None
-        
 
     def get_data(self, input: str) -> BeautifulSoup:
         # TODO: deal with url or category name
@@ -252,22 +251,8 @@ class WikiSubsetter:
         return list(page_set)
 
     def get_info(pages: Union[list[str], str]):
-
-        parsed_wikitext = mwp.parse(wikitext)
+        pass
+        # parsed_wikitext = mwp.parse(wikitext)
         # get params dict from parsed template
-        p_dict = {(kv := p.split('=', 1))[
-            0].strip(): kv[1].strip() for p in biobox.params}
-
-# %%
-
-
-ws = WikiSubsetter('www.***REMOVED***pedia.com')
-cats = ['Caucasian', 'Asian']
-# result_list = ws.get_set(cats, 'intersection',
-#  use_lists=True)
-result_naive = ws.get_set(cats, 'intersection')
-
-# assert not set(result_naive) ^ set(result_list)
-print('Done')
-
-# %%
+        # p_dict = {(kv := p.split('=', 1))[
+        #     0].strip(): kv[1].strip() for p in biobox.params}

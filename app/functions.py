@@ -1,3 +1,6 @@
+# Legacy functions from original development
+
+
 # %%
 import requests
 from bs4 import BeautifulSoup
@@ -12,11 +15,11 @@ def get_data(page) -> BeautifulSoup:
     return BeautifulSoup(page.text, 'html.parser')
 
 
-def get_***REMOVED***s(category: str, get_subcats: bool = False,
+def get_pages(category: str, get_subcats: bool = False,
               get_lists: bool = False) -> list[str]:
 
-    base_url = 'https://www.***REMOVED***pedia.com'
-    ***REMOVED***s = []
+    base_url = 'https://www.pagepedia.com'
+    pages = []
 
     page = requests.get(category)
     if not page.ok:
@@ -26,15 +29,15 @@ def get_***REMOVED***s(category: str, get_subcats: bool = False,
 
     next_page = list(filter(lambda x: x.text == 'next page', links))
 
-    # get ***REMOVED***s from subcats
+    # get pages from subcats
     if get_subcats and (s := data.find(id='mw-subcategories')) is not None:
         s = data.find(id='mw-subcategories')
         for link in s.find_all('a'):
             if (href := link.get('href')) is not None and 'Category' in href:
-                ***REMOVED***s.extend(get_***REMOVED***s(base_url + href))
+                pages.extend(get_pages(base_url + href))
 
     if len(next_page) != 0:
-        ***REMOVED***s.extend(get_***REMOVED***s(base_url + next_page[0].get('href')))
+        pages.extend(get_pages(base_url + next_page[0].get('href')))
 
     content = data.find(id='mw-pages')
 
@@ -47,33 +50,33 @@ def get_***REMOVED***s(category: str, get_subcats: bool = False,
         map(lambda x: x.get('href'), content.find_all('a'))
     )
 
-    ***REMOVED***s.extend(links)
-    ***REMOVED***s = list(set(***REMOVED***s))
+    pages.extend(links)
+    pages = list(set(pages))
 
-    return ***REMOVED***s
+    return pages
 
 # %%
 
 
-def get_active(***REMOVED***s: list[str]) -> list[str]:
+def get_active(pages: list[str]) -> list[str]:
     """Finds active models
 
     Args:
-        ***REMOVED***s (list): A list in the format ['/***REMOVED***s/Model_A',
-                                            '/***REMOVED***s/Model_B', ...]
+        pages (list): A list in the format ['/pages/Page_A',
+                                            '/pages/Page_B', ...]
 
     Returns:
         list: A list of active models
     """
 
-    active_***REMOVED***s = []
+    active_pages = []
 
-    base_url = 'https://www.***REMOVED***pedia.com'
+    base_url = 'https://www.pagepedia.com'
 
-    for ***REMOVED*** in ***REMOVED***s:
-        page = requests.get(base_url + ***REMOVED***)
+    for page in pages:
+        page = requests.get(base_url + page)
         if not page.ok:
-            raise Exception(f'Invalid ***REMOVED***: {***REMOVED***}')
+            raise Exception(f'Invalid page: {page}')
         data = BeautifulSoup(page.text)
 
         candidates = data.find(class_='infobox').find_all('td')
@@ -84,15 +87,15 @@ def get_active(***REMOVED***s: list[str]) -> list[str]:
             years = re.split('-|—|–', years)
             years = [x.strip() for x in years if x.strip() != '']
             if len(years) >= 2 and not years[-1].isnumeric():
-                active_***REMOVED***s.append(***REMOVED***)
-                print(f'Active:{years}\t\t{***REMOVED***}')
+                active_pages.append(page)
+                print(f'Active:{years}\t\t{page}')
             elif len(years) >= 2:
-                print(f'Inactive:{years}\t\t{***REMOVED***}')
+                print(f'Inactive:{years}\t\t{page}')
                 continue
             else:
                 pass
 
-    return active_***REMOVED***s
+    return active_pages
 
 # %%
 
@@ -100,7 +103,7 @@ def get_active(***REMOVED***s: list[str]) -> list[str]:
 
 
 def get_set(categories: Union[list[str], str], operation: str,
-            ***REMOVED***s_list: Optional[list[str]] = None,
+            pages_list: Optional[list[str]] = None,
             get_subcats: bool = False) -> list:
 
     if operation not in ['union', 'intersection']:
@@ -109,24 +112,24 @@ def get_set(categories: Union[list[str], str], operation: str,
               chose from following: ['union','intersection']"
         )
 
-    ***REMOVED***_set = set()
+    page_set = set()
     operator = 'update' if operation == 'union' else 'intersection_update'
 
     # edge cases
     if len(categories) == 0:
         raise Exception('Invalid argument')
     elif len(categories) == 1:
-        ***REMOVED***_set.update(get_***REMOVED***s(categories[0]))
+        page_set.update(get_pages(categories[0]))
     elif type(categories) == str:
-        ***REMOVED***_set.update(get_***REMOVED***s(categories))
+        page_set.update(get_pages(categories))
     else:
         for category in categories:
-            if not ***REMOVED***_set:
-                ***REMOVED***_set.update(get_***REMOVED***s(category, get_subcats))
+            if not page_set:
+                page_set.update(get_pages(category, get_subcats))
                 continue
-            getattr(***REMOVED***_set, operator)(get_***REMOVED***s(category, get_subcats))
+            getattr(page_set, operator)(get_pages(category, get_subcats))
 
-    if ***REMOVED***s_list is not None:
-        getattr(***REMOVED***_set, operator)(***REMOVED***s_list)
+    if pages_list is not None:
+        getattr(page_set, operator)(pages_list)
 
-    return list(***REMOVED***_set)
+    return list(page_set)
