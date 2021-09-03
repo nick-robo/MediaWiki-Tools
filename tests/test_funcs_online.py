@@ -1,14 +1,15 @@
-from app.functions import get_set, get_***REMOVED***s
+from app.functions import get_set, get_pages
 from functools import reduce
 
 
 def test_get_set_intersection1():
     cats = [
-        'https://www.***REMOVED***pedia.com/***REMOVED***s/Category:1968_births',
-        'https://www.***REMOVED***pedia.com/***REMOVED***s/Category:Italian'
+        'https://handwiki.org/wiki/\
+            Category:Android_(operating_system)_development_software',
+        'https://handwiki.org/wiki/Category:MacOS_programming_tools'
     ]
     result_naive = set(reduce(lambda x, y: x & y,
-                              map(lambda x: set(get_***REMOVED***s(x)), cats)))
+                              map(lambda x: set(get_pages(x)), cats)))
     result_function = get_set(categories=cats, operation='intersection')
 
     assert len(result_naive ^ set(result_function)) == 0
@@ -16,12 +17,13 @@ def test_get_set_intersection1():
 
 def test_get_set_intersection2():
     cats = [
-        'https://www.***REMOVED***pedia.com/***REMOVED***s/Category:1968_births',
-        'https://www.***REMOVED***pedia.com/***REMOVED***s/Category:Italian',
-        'https://www.***REMOVED***pedia.com/***REMOVED***s/Category:Singers'
+        'https://handwiki.org/wiki/\
+            Category:Android_(operating_system)_development_software',
+        'https://handwiki.org/wiki/Category:MacOS_programming_tools',
+        'https://handwiki.org/wiki/Category:Linux_programming_tools'
     ]
     result_naive = set(reduce(lambda x, y: x & y,
-                              map(lambda x: set(get_***REMOVED***s(x)), cats)))
+                              map(lambda x: set(get_pages(x)), cats)))
     result_function = get_set(categories=cats, operation='intersection')
 
     assert len(result_naive ^ set(result_function)) == 0
@@ -29,23 +31,12 @@ def test_get_set_intersection2():
 
 def test_get_set_union1():
     cats = [
-        'https://www.***REMOVED***pedia.com/***REMOVED***s/Category:1968_births',
-        'https://www.***REMOVED***pedia.com/***REMOVED***s/Category:1969_births'
+        'https://handwiki.org/wiki/\
+            Category:Android_(operating_system)_development_software',
+        'https://handwiki.org/wiki/Category:MacOS_programming_tools'
     ]
     result_naive = set(reduce(lambda x, y: x | y,
-                              map(lambda x: set(get_***REMOVED***s(x)), cats)))
-    result_function = set(get_set(categories=cats, operation='union'))
-
-    assert len(result_naive) == len(result_function)
-    assert len(result_naive ^ result_function) == 0
-
-
-def test_get_set_union2():
-    a = 'https://www.***REMOVED***pedia.com/***REMOVED***s/Category:196'
-    b = '_births'
-    cats = [a + str(i) + b for i in range(10)]
-    result_naive = set(reduce(lambda x, y: x | y,
-                              map(lambda x: set(get_***REMOVED***s(x)), cats)))
+                              map(lambda x: set(get_pages(x)), cats)))
     result_function = set(get_set(categories=cats, operation='union'))
 
     assert len(result_naive) == len(result_function)
@@ -54,33 +45,33 @@ def test_get_set_union2():
 
 def test_get_set_list_input():
 
-    cat = 'https://www.***REMOVED***pedia.com/***REMOVED***s/Category:Turkish'
-    link_list = ['/***REMOVED***s/Steve', '/***REMOVED***s/Bob']
+    cat = 'https://handwiki.org/wiki/Category:Linux_programming_tools'
+    link_list = ['/wiki/Steve', '/wiki/Bob']
 
-    result_naive = set(get_***REMOVED***s(cat))
+    result_naive = set(get_pages(cat))
     result_func = set(get_set(
-        categories=cat, operation='union', ***REMOVED***s_list=link_list
+        categories=cat, operation='union', pages_list=link_list
     ))
 
     assert len((result_naive | set(link_list)) ^ result_func) == 0
 
-    link_list = ['/***REMOVED***s/Priscilla_Aydin', '/***REMOVED***s/Meral_Ertunc']
+    link_list = ['/wiki/Priscilla_Aydin', '/wiki/Meral_Ertunc']
 
     result_func = set(
         get_set(
             categories=cat, operation='intersection',
-            ***REMOVED***s_list=link_list
+            pages_list=link_list
         )
     )
 
     assert len((result_naive & set(link_list)) ^ result_func) == 0
 
 
-def test_get_***REMOVED***s_subcats():
-    cat = 'https://www.***REMOVED***pedia.com/***REMOVED***s/Category:Eurasian'
+def test_get_pages_subcats():
+    cat = 'https://handwiki.org/wiki/Category:Linux_programming_tools'
 
-    links = get_***REMOVED***s(category=cat, get_subcats=False)
-    assert '/***REMOVED***s/Kassi_Nova' not in links and '/***REMOVED***s/Adriana_Luna' in links
+    links = get_pages(category=cat, get_subcats=False)
+    assert '/wiki/HBasic' not in links and 'wiki/Software:BlueJ' in links
 
-    links = get_***REMOVED***s(category=cat, get_subcats=True)
-    assert '/***REMOVED***s/Kassi_Nova' in links and '/***REMOVED***s/Adriana_Luna' in links
+    links = get_pages(category=cat, get_subcats=True)
+    assert '/wiki/HBasic' in links and 'wiki/Software:BlueJ' in links
