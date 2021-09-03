@@ -91,18 +91,13 @@ class WikiSubsetter:
             self.api_url = None
 
     def get_data(self, input: str) -> BeautifulSoup:
-        # TODO: deal with url or category name
         if 'http' in input:
             page = requests.get(input)
         else:
-            # get fragment if link
+            # get fragment if incomplete url
             input = input.split('/')[-1]
-            if 'List' in input:
-                url = self.page_base_url + input
-            else:
-                url = self.page_base_url + 'Category:' + input
+            page = requests.get(self.page_base_url + input)
 
-            page = requests.get(url)
         if not page.ok:
             raise Exception(f'Failed on page {page}')
         return BeautifulSoup(page.text, 'html.parser')
@@ -116,21 +111,39 @@ class WikiSubsetter:
             input_link (str): Url or name of category or list.
 
             get_subcats (bool, optional): If True, gets links from first
-            level subcategories. Defaults to False.
+                level subcategories. Defaults to False.
 
             get_lists (bool, optional): Gets lists in addition to pages.
-            Defaults to False.
+                Assumption (problematic): list has 'List_' in name
+                Defaults to False. 
 
             recursive (bool, optional): Recursively get links from
-            subcategories. Defaults to False.
+                subcategories. Defaults to False.
 
             list_only (bool, optional): Only get links that are lists.
-            Assumption (slightly risky): Lists are on the first page.
-            Defaults to False.
+            Assumption (slightly risky, only no api):
+                Lists are on the first page.
+                Defaults to False.
 
         Returns:
             list[str]: A list of pages.
         """
+
+        if self.has_api:
+            pages, subcats = self.mw.categorymembers(
+                re.split('/|:', input_link)[-1],
+                results=None
+            )
+            if get_subcats:
+                for cat in subcats:
+                    pages.extend(
+                        self.get_pages(
+                            get_subcats=recursive,
+                            recursive=recursive
+                        )
+                    )
+
+            return pages
 
         pages = []
         data = self.get_data(input_link)
@@ -146,7 +159,6 @@ class WikiSubsetter:
 
             # get pages from subcats
             if get_subcats and (s := data.find(id='mw-subcategories')):
-                s = data.find(id='mw-subcategories')
                 for input_link in s.find_all('a'):
                     if (h := input_link.get('href')) and 'Category' in h:
                         pages.extend(self.get_pages(
@@ -256,3 +268,5 @@ class WikiSubsetter:
         # get params dict from parsed template
         # p_dict = {(kv := p.split('=', 1))[
         #     0].strip(): kv[1].strip() for p in biobox.params}
+
+# %%
