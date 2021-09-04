@@ -3,7 +3,7 @@ import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
 import re
-from typing import Callable, Union
+from typing import Union
 from itertools import combinations
 # import mwparserfromhell as mwp
 from mediawiki import MediaWiki
@@ -213,8 +213,10 @@ class WikiSubsetter:
 
             links = [
                 link.text for link in content.find_all('a')
+                # check href not None and if it is a page link
                 if (h := link.get('href')) and self.page_name in h and
-                ('List ' not in link.text if not get_lists else True)
+                # filter lists if get_lists is false
+                (True if get_lists else 'List ' not in link.text)
             ]
 
         # get lists only
