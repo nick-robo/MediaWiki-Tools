@@ -15,7 +15,7 @@ class WikiSubsetter:
 
         Args:
             input_url (str): A url from the wiki to be subsetted.
-            Preferrably the main page.
+            Preferrably the main page or api.
         """
 
         if input_url.strip() == '':
@@ -57,8 +57,8 @@ class WikiSubsetter:
         # method 3: search landing page for link to main page
         if not self.page_name:
             data = BeautifulSoup(page.text, 'html.parser')
-            main = [x.get('href') for x in data.find_all('a')
-                    if x and 'Main' in x.get('href')]
+            main = [h for x in data.find_all('a')
+                    if (h := x.get('href')) and 'Main' in h]
             self.page_name = main[0].split('/')[0] if main else None
 
         # ensure page name was found
@@ -68,16 +68,22 @@ class WikiSubsetter:
         self.page_base_url = self.base_url + '/' + self.page_name + '/'
 
         # try to get api
-
         # build target list
         # TODO: Research more targets
         targets = [
+            input_url if 'api' in input_url else None,
             self.base_url + '/wiki/api.php',
+            self.base_url + '/api.php',
             self.base_url + '/w/api.php',
             self.page_base_url + 'api.php',
         ]
 
         for target in targets:
+            # skip None
+            if not target:
+                continue
+
+            # TODO: Find faster way than creating object
             try:
                 self.mw = MediaWiki(target)
                 self.api_url = target
@@ -95,41 +101,53 @@ class WikiSubsetter:
             page = requests.get(input)
         else:
             # get fragment if incomplete url
-            input = input.split('/')[-1]
+            input = input.split('/')[-1].replace(' ', '_')
             page = requests.get(self.page_base_url + input)
+
+            # some wikis don't automatically redir to cats
+            if not page.ok:
+                page = requests.get(
+                    self.page_base_url + 'Category:' + input
+                )
 
         if not page.ok:
             raise Exception(f'Failed on page {page}')
         return BeautifulSoup(page.text, 'html.parser')
 
-    def get_pages(self, input_link: str, get_subcats: bool = False,
-                  get_lists: bool = False, recursive: bool = False,
-                  list_only: bool = False) -> list[str]:
+    def get_pages(self, input_link: str,
+                  get_subcats: bool = False,
+                  get_lists: bool = False,
+                  recursive: bool = False,
+                  list_only: bool = False,
+                  use_api: bool = True) -> list[str]:
         """Get the pages from a category or list of the wiki.
 
         Args:
             input_link (str): Url or name of category or list.
 
-            get_subcats (bool, optional): If True, gets links from first
+            get_subcats (bool, optional): If True, gets links from first \
                 level subcategories. Defaults to False.
 
-            get_lists (bool, optional): Gets lists in addition to pages.
-                Assumption (problematic): list has 'List_' in name
-                Defaults to False. 
+            get_lists (bool, optional): Gets lists in addition to pages. \
+                Assumption (problematic): list has 'List_' in name \
+                Defaults to False.
 
-            recursive (bool, optional): Recursively get links from
+            recursive (bool, optional): Recursively get links from \
                 subcategories. Defaults to False.
 
-            list_only (bool, optional): Only get links that are lists.
-            Assumption (slightly risky, only no api):
-                Lists are on the first page.
+            list_only (bool, optional): Only get links that are lists. \
+                Assumption (slightly risky, only no api): \
+                Lists are on the first page. \
                 Defaults to False.
+
+            use_api (bool, optional): Whether to use the api (if present). \
+                Defaults to true.
 
         Returns:
             list[str]: A list of pages.
         """
 
-        if self.has_api:
+        if self.has_api and use_api:
             # TODO: Figure out method for lists
 
             pages, subcats = self.mw.categorymembers(
@@ -151,6 +169,11 @@ class WikiSubsetter:
                 pages = [p for p in pages if 'List ' in p]
 
             return pages
+
+        if any([x in self.base_url for x in ['wikia.', 'fandom.com']]):
+            raise NotImplementedError(
+                'Web scraping not implemented for wikia/fandom.com'
+            )
 
         pages = []
         data = self.get_data(input_link)
@@ -209,14 +232,25 @@ class WikiSubsetter:
                 pages_list: list[str] = [], get_subcats: bool = False,
                 use_lists: bool = False) -> list[str]:
 
-        if operation not in ['union', 'intersection']:
+        operation_dict = {
+            'intersection': 'intersection_update',
+            'i': 'intersection_update',
+            'and': 'intersection_update',
+            '&': 'intersection_update',
+            'union': 'update',
+            'u': 'update',
+            'or': 'update',
+            '|': 'update'
+        }
+
+        if operation not in operation_dict.keys():
             raise Exception(
                 f"Invalid operation: {operation} \
-                chose from following: ['union','intersection']"
+                chose from following: \n\t{operation_dict.keys()}"
             )
 
         page_set = set()
-        operator = 'update' if operation == 'union' else 'intersection_update'
+        operator = operation_dict[operation]
 
         # use lists to increase efficiency
         # caveat: slightly slower if list does not exist
