@@ -7,3 +7,4 @@ A set of tools for for filtering pages using the rich available data in MediaWik
 - To work on any MediaWiki.
 - Be efficient.
 - Get arbitrary subsets of pages beased on categories and template parameters.
+- Be very robust to variations and inconsistencies in user input.
