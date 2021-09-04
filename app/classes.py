@@ -96,23 +96,28 @@ class WikiSubsetter:
             self.has_api = False
             self.api_url = None
 
-    def get_data(self, input: str) -> BeautifulSoup:
+    def get_data(self, input: str,
+                 print_pretty: bool = False) -> BeautifulSoup:
         if 'http' in input:
             page = requests.get(input)
         else:
             # get fragment if incomplete url
             input = input.split('/')[-1].replace(' ', '_')
-            page = requests.get(self.page_base_url + input)
+            page = requests.get(self.page_base_url + 'Category:' + input)
 
-            # some wikis don't automatically redir to cats
+            # if not category
             if not page.ok:
                 page = requests.get(
-                    self.page_base_url + 'Category:' + input
+                    self.page_base_url + input
                 )
 
         if not page.ok:
             raise Exception(f'Failed on page {page}')
-        return BeautifulSoup(page.text, 'html.parser')
+
+        data = BeautifulSoup(page.text, 'html.parser')
+        if print_pretty:
+            print()
+        return data
 
     def get_pages(self, input_link: str,
                   get_subcats: bool = False,
@@ -205,14 +210,13 @@ class WikiSubsetter:
                         get_lists=get_lists
                     )
                 )
-            filter_links: Callable[[str], bool] = lambda x: (
-                x if get_lists else (x and 'List' not in x)
-            )
 
-            links = filter(
-                filter_links,
-                map(lambda x: x.get('href'), content.find_all('a'))
-            )
+            links = [
+                link.text for link in content.find_all('a')
+                if (h := link.get('href')) and self.page_name in h and
+                ('List ' not in link.text if not get_lists else True)
+            ]
+
         # get lists only
         elif is_category:
             # assumption: all lists are on first page (>200 lists)
