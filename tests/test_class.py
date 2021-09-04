@@ -38,7 +38,6 @@ def test_class_get_pages():
         'Europe itineraries',
         'Europe_itineraries',
         'https://en.wikivoyage.org/wiki/Category:Europe_itineraries',
-
     ]
     assert ws.has_api
 
