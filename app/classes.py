@@ -165,15 +165,24 @@ class WikiSubsetter:
 
         if self.has_api and use_api:
             # TODO: Figure out method for lists
+            name = ''
 
+            if any(
+                [x in input_link for x in self.base_url.split('/') if x]
+            ):
+                i = input_link.split('/').index(self.page_name)
+                name = '/'.join(input_link.split('/')[i+1:])
+
+            name = input_link if not name else name
             pages, subcats = self.mw.categorymembers(
-                re.split('/|:', input_link)[-1],
+                name,
                 results=None
             )
-            if get_subcats:
+            if (get_subcats or recursive):
                 for cat in subcats:
                     pages.extend(
                         self.get_pages(
+                            cat,
                             get_subcats=recursive,
                             recursive=recursive
                         )
@@ -213,21 +222,23 @@ class WikiSubsetter:
             next_page = list(filter(lambda x: x.text == 'next page', links))
 
             # get pages from subcats
-            if get_subcats and (s := data.find(id='mw-subcategories')):
+            if (get_subcats or recursive) and (s := data.find(id='mw-subcategories')):
                 for input_link in s.find_all('a'):
                     if (h := input_link.get('href')) and 'Category' in h:
                         pages.extend(self.get_pages(
                             self.base_url + h,
                             get_subcats=recursive,
                             get_lists=get_lists,
-                            recursive=recursive
+                            recursive=recursive,
+                            use_api=use_api
                         ))
 
             if len(next_page) != 0:
                 pages.extend(
                     self.get_pages(
                         self.base_url + next_page[0].get('href'),
-                        get_lists=get_lists
+                        get_lists=get_lists,
+                        use_api=use_api
                     )
                 )
 
@@ -336,4 +347,19 @@ class WikiSubsetter:
         # p_dict = {(kv := p.split('=', 1))[
         #     0].strip(): kv[1].strip() for p in biobox.params}
 
+# %%
+
+
+ws = WikiSubsetter('https://en.uncyclopedia.co')
+cats = [
+    'Your Mom',
+    'Your_Mom',
+    'https://en.uncyclopedia.co/wiki/Category:Your_Mom',
+]
+
+res_api = ws.get_pages(cats[0],
+                       get_subcats=True)
+res_no_api = ws.get_pages(cats[0],
+                          get_subcats=True,
+                          use_api=False)
 # %%
