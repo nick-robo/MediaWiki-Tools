@@ -57,13 +57,24 @@ class WikiSubsetter:
         # method 3: search landing page for link to main page
         if not self.page_name:
             data = BeautifulSoup(page.text, 'html.parser')
-            main = [h for x in data.find_all('a')
-                    if (h := x.get('href')) and 'Main' in h]
-            self.page_name = main[0].split('/')[0] if main else None
+            r = [h for x in data.find_all('a')
+                 if (h := x.get('href')) and 'Main' in h]
+            self.page_name = r[0].split('/')[0] if r else None
+
+        # method 4: last ditch attempt
+        if not self.page_name:
+            r = [
+                # find /page_name/Page links and get page_name
+                h[1] for x in data.find_all('a')
+                if (h := x.get('href')) and len(h := h.split('/')) == 3
+            ]
+            # get most frequent page name
+            self.page_name = max(set(r), key=r.count) if r else None
 
         # ensure page name was found
         assert self.page_name, 'Could not get page name\
-                                (wiki.com/page_name/Page)'
+                                (wiki.com/page_name/Page)\n\
+                                Try input an article page'
 
         self.page_base_url = self.base_url + '/' + self.page_name + '/'
 
@@ -169,10 +180,19 @@ class WikiSubsetter:
                     )
 
             if not get_lists:
-                pages = [p for p in pages if 'List ' not in p]
-            if list_only:
-                pages = [p for p in pages if 'List ' in p]
-
+                pages = [
+                    p for p in pages if 'List ' not in p and
+                    'File:' not in p
+                ]
+            elif list_only:
+                pages = [
+                    p for p in pages if 'List ' in p and
+                    'File:' not in p
+                ]
+            else:
+                pages = [
+                    p for p in pages if 'File:' not in p
+                ]
             return pages
 
         if any([x in self.base_url for x in ['wikia.', 'fandom.com']]):

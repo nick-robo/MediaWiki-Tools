@@ -18,7 +18,7 @@ def get_data(page) -> BeautifulSoup:
 def get_pages(category: str, get_subcats: bool = False,
               get_lists: bool = False) -> list[str]:
 
-    base_url = 'https://www.pagepedia.com'
+    base_url = 'https://handwiki.org'
     pages = []
 
     page = requests.get(category)

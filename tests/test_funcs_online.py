@@ -71,7 +71,9 @@ def test_get_pages_subcats():
     cat = 'https://handwiki.org/wiki/Category:Linux_programming_tools'
 
     links = get_pages(category=cat, get_subcats=False)
-    assert '/wiki/HBasic' not in links and 'wiki/Software:BlueJ' in links
+    assert '/wiki/HBasic' not in links 
+    assert '/wiki/Software:BlueJ' in links
 
     links = get_pages(category=cat, get_subcats=True)
-    assert '/wiki/HBasic' in links and 'wiki/Software:BlueJ' in links
+    assert '/wiki/HBasic' in links 
+    assert '/wiki/Software:BlueJ' in links
