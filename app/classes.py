@@ -1,7 +1,7 @@
 # %%
 import requests
 from bs4 import BeautifulSoup
-from urllib.parse import urlparse
+from urllib.parse import urlparse, quote
 import re
 from typing import Union
 from itertools import combinations
@@ -101,8 +101,8 @@ class WikiSubsetter:
         if 'http' in input:
             page = requests.get(input)
         else:
-            # get fragment if incomplete url
-            input = input.split('/')[-1].replace(' ', '_')
+            # get fragment if incomplete url and url encode it
+            input = quote(input.split('/')[-1].replace(' ', '_'))
             page = requests.get(self.page_base_url + 'Category:' + input)
 
             # if not category

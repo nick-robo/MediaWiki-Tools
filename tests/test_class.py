@@ -33,11 +33,11 @@ def test_class_init_api2(page):
 
 
 def test_class_get_pages():
-    ws = WikiSubsetter('https://en.wikivoyage.org/wiki/Main_Page')
+    ws = WikiSubsetter('https://en.uncyclopedia.co')
     cats = [
-        'Europe itineraries',
-        'Europe_itineraries',
-        'https://en.wikivoyage.org/wiki/Category:Europe_itineraries',
+        'Deities',
+        'Deities',
+        'https://en.uncyclopedia.co/wiki/Category:Deities',
     ]
     assert ws.has_api
 
