@@ -62,8 +62,8 @@ class WikiSubsetter:
             self.page_name = main[0].split('/')[0] if main else None
 
         # ensure page name was found
-        assert self.page_name is not None, 'Could not get page name\
-                                            (wiki.com/page_name/Page)'
+        assert self.page_name, 'Could not get page name\
+                                (wiki.com/page_name/Page)'
 
         self.page_base_url = self.base_url + '/' + self.page_name + '/'
 

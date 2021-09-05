@@ -11,11 +11,10 @@ pymediawiki = "*"
 
 [dev-packages]
 ipython = "*"
-pytest = "*"
 ipykernel = "*"
 autopep8 = "*"
-pytest-cov = "*"
 flake8 = "*"
+pytest = "*"
 
 [requires]
 python_version = "3.9"
