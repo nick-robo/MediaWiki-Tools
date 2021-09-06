@@ -5,6 +5,7 @@ from urllib.parse import urlparse, quote
 import re
 from typing import Union
 from itertools import combinations
+from warnings import warn
 # import mwparserfromhell as mwp
 from mediawiki import MediaWiki
 
@@ -106,6 +107,7 @@ class WikiSubsetter:
 			self.mw = None
 			self.has_api = False
 			self.api_url = None
+			warn('Could not find API, web scraping will be used')
 
 	def get_data(self,
 	             input: str,

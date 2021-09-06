@@ -24,7 +24,7 @@ def test_class_init_api(page):
 
 
 @pytest.mark.parametrize('page', wiki_list_no_api)
-def test_class_init_api2(page):
+def test_class_init_no_api(page):
 	ws = WikiSubsetter(page)
 
 	assert not ws.has_api
