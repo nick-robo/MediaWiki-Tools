@@ -1,9 +1,5 @@
 .coverage
 .vscode/settings.json
-app/__pycache__/__init__.cpython-39.pyc
-app/__pycache__/classes.cpython-39.pyc
-app/__pycache__/functions.cpython-39.pyc
-tests/__pycache__/__init__.cpython-39.pyc
-tests/__pycache__/test_class.cpython-39-pytest-6.2.4.pyc
-tests/__pycache__/test_funcs_online.cpython-39-pytest-6.2.4.pyc
+app/__pycache__/*
+tests/__pycache__/*
 .vscode/*

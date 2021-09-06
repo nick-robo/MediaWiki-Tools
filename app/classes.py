@@ -1,13 +1,13 @@
 # %%
 import requests
 from bs4 import BeautifulSoup
-from urllib.parse import urlparse, quote
+from urllib.parse import urlparse, quote, unquote
 import re
 from typing import Union
 from itertools import combinations
 from warnings import warn
-# import mwparserfromhell as mwp
 from mediawiki import MediaWiki
+# import mwparserfromhell as mwp
 
 
 class WikiSubsetter:
@@ -109,6 +109,25 @@ class WikiSubsetter:
 			self.api_url = None
 			warn('Could not find API, web scraping will be used')
 
+	def __filter_pagelist(self, page_list: list[str], get_lists: bool,
+	                      list_only: bool) -> list[str]:
+		# TODO: Figure out better method to find lists
+
+		filtered = []
+
+		for page in page_list:
+			if 'File:' in page:
+				continue
+
+			if get_lists:
+				filtered.append(page)
+			elif list_only and 'List ' in page:
+				filtered.append(page)
+			elif 'List ' not in page:
+				filtered.append(page)
+
+		return filtered
+
 	def get_data(self,
 	             input: str,
 	             print_pretty: bool = False) -> BeautifulSoup:
@@ -134,10 +153,12 @@ class WikiSubsetter:
 	def get_pages(self,
 	              input_link: str,
 	              get_subcats: bool = False,
+	              with_subcats: bool = False,
 	              get_lists: bool = False,
 	              recursive: bool = False,
 	              list_only: bool = False,
-	              use_api: bool = True) -> list[str]:
+	              use_api: bool = True,
+	              _base: bool = True) -> Union[list[str], dict]:
 		"""Get the pages from a category or list of the wiki.
 
 		Args:
@@ -163,96 +184,141 @@ class WikiSubsetter:
 
 		Returns:
 			list[str]: A list of pages.
+		
+		Note:
+			API and non-API methods may return different results based on \
+			how recently the category page was updated. API mehtod should \
+			be considered correct.
 		"""
+		pages: Union[list[str], dict] = {} if with_subcats else []
 
 		if self.has_api and use_api:
-			# TODO: Figure out method for lists
-			name = None
+			cat_name = None
 
 			if any([x in input_link for x in self.base_url.split('/') if x]):
 				i = input_link.split('/').index(self.page_name)
-				name = '/'.join(input_link.split('/')[i + 1:])
-				name = name.split(':', 1)[1] if 'Category:' in name else name
+				cat_name = '/'.join(input_link.split('/')[i + 1:])
+				cat_name = cat_name.split(
+				    ':', 1)[1] if 'Category:' in cat_name else cat_name
 
-			name = input_link if not name else name
-			pages, subcats = self.mw.categorymembers(name, results=None)
+			cat_name = input_link if not cat_name else cat_name
+			pages_res, subcats = self.mw.categorymembers(cat_name,
+			                                             results=None)
+
+			# add current category links to result
+			pages_res = self.__filter_pagelist(pages_res,
+			                                   get_lists=get_lists,
+			                                   list_only=list_only)
+			if with_subcats:
+				pages['self'] = pages_res
+			else:
+				pages.extend(pages_res)
+
+			# get subcategories
 			if (get_subcats or recursive):
 				for cat in subcats:
-					pages.extend(
-					    self.get_pages(cat,
-					                   get_subcats=recursive,
-					                   recursive=recursive))
+					pages_res = self.get_pages(cat,
+					                           get_subcats=recursive,
+					                           recursive=recursive,
+					                           with_subcats=(recursive
+					                                         and with_subcats),
+					                           _base=False)
+					if with_subcats:
+						# filter each sublist
+						pages[cat] = self.__filter_pagelist(
+						    pages_res,
+						    get_lists=get_lists,
+						    list_only=list_only) if type(
+						        pages_res) is not dict else pages_res
+					else:
+						pages.extend(pages_res)
 
-			if not get_lists:
-				pages = [
-				    p for p in pages if 'List ' not in p and 'File:' not in p
-				]
-			elif list_only:
-				pages = [p for p in pages if 'List ' in p and 'File:' not in p]
-			else:
-				pages = [p for p in pages if 'File:' not in p]
-			return pages
+			if not with_subcats:
+				# filter pagelist once
+				pages = self.__filter_pagelist(pages,
+				                               get_lists=get_lists,
+				                               list_only=list_only)
 
-		if any([x in self.base_url for x in ['wikia.', 'fandom.com']]):
-			raise NotImplementedError(
-			    'Web scraping not implemented for wikia/fandom.com')
-
-		pages = []
-		data = self.get_data(input_link)
-
-		# get page div if category
-		content = data.find(id='mw-pages')
-		is_category = True if content else False
-
-		if is_category and not list_only:
-			links = data.find_all('a')
-
-			next_page = list(filter(lambda x: x.text == 'next page', links))
-
-			# get pages from subcats
-			if (get_subcats
-			    or recursive) and (s := data.find(id='mw-subcategories')):
-				for input_link in s.find_all('a'):
-					if (h := input_link.get('href')) and 'Category' in h:
-						pages.extend(
-						    self.get_pages(self.base_url + h,
-						                   get_subcats=recursive,
-						                   get_lists=get_lists,
-						                   recursive=recursive,
-						                   use_api=use_api))
-
-			if len(next_page) != 0:
-				pages.extend(
-				    self.get_pages(self.base_url + next_page[0].get('href'),
-				                   get_lists=get_lists,
-				                   use_api=use_api))
-
-			links = [
-			    link.text for link in content.find_all('a')
-			    # check href not None and if it is a page link
-			    if (h := link.get('href')) and self.page_name in h and
-			    # filter lists if get_lists is false
-			    (True if get_lists else 'List ' not in link.text)
-			]
-
-		# get lists only
-		elif is_category:
-			# assumption: all lists are on first page (>200 lists)
-			links = [
-			    h for x in content.find_all('a')
-			    if (h := x.get('href')) and 'List_' in h
-			]
-		# if input_link is list
+		# if no api available
 		else:
-			content = data.find(id="mw-content-text").find_all('a')
-			links = [
-			    x.get('href') for x in content
-			    if len(x) == 1 and not x.get('class')
-			]
+			if any([x in self.base_url for x in ['wikia.', 'fandom.com']]):
+				raise NotImplementedError(
+				    'Web scraping not implemented for wikia/fandom.com')
 
-		pages.extend(links)
+			data = self.get_data(input_link)
 
-		return list(set(pages))
+			# get category name from input link
+			cat_name = input_link.split(':')[-1].replace('_', ' ')
+
+			# get page div if category
+			content = data.find(id='mw-pages')
+			is_category = True if content else False
+
+			if is_category and not list_only:
+				links = data.find_all('a')
+
+				next_page = list(filter(lambda x: x.text == 'next page',
+				                        links))
+
+				# get pages from subcats
+				if (get_subcats
+				    or recursive) and (s := data.find(id='mw-subcategories')):
+					for input_link in s.find_all('a'):
+						if (h := input_link.get('href')) and 'Category' in h:
+							pages_res = self.get_pages(
+							    self.base_url + h,
+							    get_subcats=recursive,
+							    get_lists=get_lists,
+							    recursive=recursive,
+							    with_subcats=(with_subcats and recursive),
+							    use_api=use_api,
+							    _base=False)
+							if with_subcats:
+								subcat_name = input_link.text
+								pages[input_link.text] = pages_res
+							else:
+								pages.extend(pages_res)
+
+				links = [
+				    link.text for link in content.find_all('a')
+				    # check href not None and if it is a page link
+				    if (h := link.get('href')) and self.page_name in h and
+				    # filter lists if get_lists is false
+				    (True if get_lists else 'List ' not in link.text)
+				]
+
+				if len(next_page) != 0:
+					pages_res = self.get_pages(self.base_url +
+					                           next_page[0].get('href'),
+					                           get_lists=get_lists,
+					                           use_api=use_api)
+
+					links.extend(pages_res)
+
+			# get lists only
+			elif is_category and list_only:
+				# assumption: all lists are on first page (>200 lists)
+				links = [
+				    h for x in content.find_all('a')
+				    if (h := x.get('href')) and 'List_' in h
+				]
+			# if input_link is list
+			else:
+				content = data.find(id="mw-content-text").find_all('a')
+				links = [
+				    x.get('href') for x in content
+				    if len(x) == 1 and not x.get('class')
+				]
+
+			if with_subcats:
+				pages['self'] = links
+			else:
+				pages.extend(links)
+
+		if recursive and _base and with_subcats:
+			pages = {cat_name: pages}
+
+		return pages
 
 	def get_set(self,
 	            categories: Union[list[str], str],
@@ -330,7 +396,7 @@ class WikiSubsetter:
 		return list(page_set)
 
 	def get_info(pages: Union[list[str], str]):
-		pass
+		raise NotImplementedError()
 		# parsed_wikitext = mwp.parse(wikitext)
 		# get params dict from parsed template
 		# p_dict = {(kv := p.split('=', 1))[
@@ -346,10 +412,15 @@ cats = [
     'https://en.uncyclopedia.co/wiki/Category:Your_Mom',
 ]
 
-res_api = ws.get_pages(cats[0], get_subcats=True, recursive=True)
+res_api = ws.get_pages(cats[0],
+                       get_subcats=True,
+                       with_subcats=True,
+                       recursive=True,
+                       use_api=True)
+
 res_no_api = ws.get_pages(cats[0],
                           get_subcats=True,
                           recursive=True,
+                          with_subcats=True,
                           use_api=False)
-
 # %%
