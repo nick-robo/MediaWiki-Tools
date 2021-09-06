@@ -5,6 +5,12 @@
     "python.testing.pytestArgs": [
         "tests"
     ],
+    "python.linting.flake8Args": [
+        "--config=setup.cfg",
+        "--use-flake-tabs"
+    ],
     "python.testing.unittestEnabled": false,
-    "python.testing.pytestEnabled": true
+    "python.testing.pytestEnabled": true,
+    "python.formatting.provider": "yapf",
+    "editor.tabSize": 2
 }

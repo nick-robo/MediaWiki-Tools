@@ -12,9 +12,10 @@ pymediawiki = "*"
 [dev-packages]
 ipython = "*"
 ipykernel = "*"
-autopep8 = "*"
 flake8 = "*"
 pytest = "*"
+flake8-tabs = "*"
+yapf = "*"
 
 [requires]
 python_version = "3.9"
