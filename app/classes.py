@@ -165,13 +165,14 @@ class WikiSubsetter:
 
         if self.has_api and use_api:
             # TODO: Figure out method for lists
-            name = ''
+            name = None
 
             if any(
                 [x in input_link for x in self.base_url.split('/') if x]
             ):
                 i = input_link.split('/').index(self.page_name)
                 name = '/'.join(input_link.split('/')[i+1:])
+                name = name.split(':', 1)[1] if 'Category:' in name else name
 
             name = input_link if not name else name
             pages, subcats = self.mw.categorymembers(
