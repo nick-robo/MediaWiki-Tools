@@ -117,7 +117,7 @@ def test_class_get_pages():
 
 	res_api = ws.get_pages(cat, use_api=True)
 
-	res_no_api = ws.get_pages(cats[0], use_api=False)
+	res_no_api = ws.get_pages(cat, use_api=False)
 
 	assert res_api
 	assert_pagelist_equivalent(res_api, res_no_api)
@@ -125,7 +125,7 @@ def test_class_get_pages():
 	# test get_lists
 	cat = 'Lists_of_film_directors_by_nationality'
 	res_api = ws.get_pages(cat, get_lists=True, use_api=True)
-	res_no_api = ws.get_pages(cats[0], get_lists=True, use_api=False)
+	res_no_api = ws.get_pages(cat, get_lists=True, use_api=False)
 
 	assert res_api
 	assert_pagelist_equivalent(res_api, res_no_api)
