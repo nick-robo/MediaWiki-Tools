@@ -20,6 +20,7 @@ yapf = "*"
 pep8-naming = "*"
 flake8-docstrings = "*"
 flake8-rst-docstrings = "*"
+pytest-cov = "*"
 
 [requires]
 python_version = "3.9"
