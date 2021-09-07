@@ -404,25 +404,3 @@ class WikiSubsetter:
 		# p_dict = {(kv := p.split('=', 1))[
 		#	 0].strip(): kv[1].strip() for p in biobox.params}
 
-
-# %%
-
-ws = WikiSubsetter('boobpedia.com')
-cats = [
-    'Europe',
-    'Your_Mom',
-    'https://en.uncyclopedia.co/wiki/Category:Your_Mom',
-]
-
-res_api = ws.get_pages(cats[0],
-                       get_subcats=True,
-                       with_subcats=True,
-                       recursive=True,
-                       use_api=True)
-
-res_no_api = ws.get_pages(cats[0],
-                          get_subcats=True,
-                          recursive=True,
-                          with_subcats=True,
-                          use_api=False)
-# %%
