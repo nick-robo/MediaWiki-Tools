@@ -7,6 +7,7 @@ from typing import Union
 from itertools import combinations
 from warnings import warn
 from mediawiki import MediaWiki
+from pprint import pprint
 # import mwparserfromhell as mwp
 
 
@@ -252,7 +253,8 @@ class WikiSubsetter:
 
 			# get page div if category
 			content = data.find(id='mw-pages')
-			is_category = True if content else False
+			# if category is title
+			is_category = 'Category:' in data.find(id='firstHeading').text
 
 			if is_category and not list_only:
 				links = data.find_all('a')
@@ -405,9 +407,9 @@ class WikiSubsetter:
 
 # %%
 
-ws = WikiSubsetter('https://en.uncyclopedia.co')
+ws = WikiSubsetter('boobpedia.com')
 cats = [
-    'Your Mom',
+    'Europe',
     'Your_Mom',
     'https://en.uncyclopedia.co/wiki/Category:Your_Mom',
 ]
