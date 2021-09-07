@@ -21,6 +21,7 @@ class MediaWikiTools:
 
 	def __init__(self, input_url: str):
 		"""Create MediaWikiTools instance."""
+		# TODO: fails on input wikipedia.org
 		if input_url.strip() == '':
 			raise ValueError('Empty wiki url')
 

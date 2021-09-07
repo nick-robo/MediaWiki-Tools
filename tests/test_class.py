@@ -10,6 +10,9 @@ wiki_list = ('harrypotter.fandom.com',
 
 wiki_list_no_api = ('https://proteopedia.org', 'https://www.werelate.org/')
 
+invalid_list = ('google', 'https://google', 'https://google/search',
+                'https://www.fakewiki.biz/')
+
 
 def assert_pagelist_equivalent(reslist1: list[str],
                                reslist2: list[str]) -> None:
@@ -22,7 +25,7 @@ def assert_pagelist_equivalent(reslist1: list[str],
 	# TODO: Flexibly check whether get pages results are equivalent
 	# 			up to deletions and recent changes
 	assert set(reslist1) == set(reslist2), \
-                 f'API and non-API results differ: \
+                                f'API and non-API results differ: \
 					{DeepDiff(reslist1, reslist2, ignore_order=True)}'
 
 
@@ -44,7 +47,24 @@ def test_class_init_no_api(page):
 	assert ws.page_base_url
 
 
+@pytest.mark.parametrize('page', invalid_list)
+def test_class_init_invalid(page):
+	with pytest.raises(Exception):
+		MediaWikiTools(page)
+
+
 def test_class_get_pages():
+	# assert raises exception if no api with wikia/fandom
+	with pytest.raises(Exception):
+		ws = MediaWikiTools('https://lgbt.wikia.org/wiki/Main_Page')
+		ws.get_pages('https://lgbt.wikia.org/wiki/Category:1958_births',
+		             use_api=False)
+
+	with pytest.raises(Exception):
+		ws = MediaWikiTools('harrypotter.fandom.com')
+		ws.get_pages('Hogwarts_dropouts', use_api=False)
+
+	# test get_pages
 	ws = MediaWikiTools('https://en.uncyclopedia.co')
 	cats = [
 	    'Your Mom',
@@ -90,6 +110,25 @@ def test_class_get_pages():
 	# check missing or added categories
 	assert not diff.get('dictionary_item_removed')
 	assert not diff.get('dictionary_item_added')
+
+	# test no_api with paginated category
+	ws = MediaWikiTools('en.wikipedia.org')
+	cat = 'Italian_film_directors'
+
+	res_api = ws.get_pages(cat, use_api=True)
+
+	res_no_api = ws.get_pages(cats[0], use_api=False)
+
+	assert res_api
+	assert_pagelist_equivalent(res_api, res_no_api)
+
+	# test get_lists
+	cat = 'Lists_of_film_directors_by_nationality'
+	res_api = ws.get_pages(cat, get_lists=True, use_api=True)
+	res_no_api = ws.get_pages(cats[0], get_lists=True, use_api=False)
+
+	assert res_api
+	assert_pagelist_equivalent(res_api, res_no_api)
 
 
 def test_get_set():
