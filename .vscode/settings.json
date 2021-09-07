@@ -6,8 +6,6 @@
         "tests"
     ],
     "python.linting.flake8Args": [
-        "--config=setup.cfg",
-        "--use-flake-tabs"
     ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
