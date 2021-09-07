@@ -287,7 +287,7 @@ class WikiSubsetter:
 				    if (h := link.get('href')) and self.page_name in h and
 				    # filter lists if get_lists is false
 				    (True if get_lists else 'List ' not in link.text)
-				]
+				] if content else []
 
 				if len(next_page) != 0:
 					pages_res = self.get_pages(self.base_url +
