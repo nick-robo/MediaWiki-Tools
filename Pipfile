@@ -17,6 +17,9 @@ flake8 = "*"
 pytest = "*"
 flake8-tabs = "*"
 yapf = "*"
+pep8-naming = "*"
+flake8-docstrings = "*"
+flake8-rst-docstrings = "*"
 
 [requires]
 python_version = "3.9"

@@ -1,3 +1,4 @@
+"""MediaWikiTools class module."""
 # %%
 import requests
 from bs4 import BeautifulSoup
@@ -12,14 +13,15 @@ from mediawiki import MediaWiki
 
 
 class MediaWikiTools:
+	"""MediaWikiTools object of a MediaWiki page.
+
+	Args:
+		input_url (str): A url from the wiki to be subsetted.
+		Preferrably the main page or api.
+	"""
+
 	def __init__(self, input_url: str):
-		"""Create WikiSubsetter object from a MediaWiki page.
-
-		Args:
-			input_url (str): A url from the wiki to be subsetted.
-			Preferrably the main page or api.
-		"""
-
+		"""Create MediaWikiTools instance."""
 		if input_url.strip() == '':
 			raise ValueError('Empty wiki url')
 
@@ -132,7 +134,19 @@ class MediaWikiTools:
 	def get_data(self,
 	             input: str,
 	             print_pretty: bool = False) -> BeautifulSoup:
+		"""Get BeautifulSoup page data from category name or url.
 
+		Args:
+				input (str): Category name or url.
+				print_pretty (bool, optional): Pretty print data for debug. \
+					Defaults to False.
+
+		Raises:
+				Exception: If request fails.
+
+		Returns:
+				BeautifulSoup: BeautifulSoup object of input page.
+		"""
 		if 'http' in input:
 			page = requests.get(input)
 		else:
@@ -163,7 +177,7 @@ class MediaWikiTools:
 	              list_only: bool = False,
 	              use_api: bool = True,
 	              _base: bool = True) -> Union[list[str], dict]:
-		"""Get the pages from a category or list of the wiki.
+		r"""Get the pages from a category or list of the wiki.
 
 		Args:
 			input_link (str): Url or name of category or list.
@@ -171,8 +185,11 @@ class MediaWikiTools:
 			get_subcats (bool, optional): If True, gets links from first \
 				level subcategories. Defaults to False.
 
+			with_subcats (bool, optional): Return dict of categories and \
+				corresponding pages.
+
 			get_lists (bool, optional): Gets lists in addition to pages. \
-				Assumption (problematic): list has 'List_' in name \
+				Assumption (problematic): lists have `'List_'` in their name \
 				Defaults to False.
 
 			recursive (bool, optional): Recursively get links from \
@@ -187,12 +204,15 @@ class MediaWikiTools:
 				Defaults to true.
 
 		Returns:
-			list[str]: A list of pages.
+			list[str] or dict: A list of pages.
 		
 		Note:
 			API and non-API methods may return different results based on \
 			how recently the category/list page was updated. API mehtod \
 			should be considered correct.
+		Note 2:
+			If recursive and with_subcats the function with return a nested \
+				dictionary.\n
 		"""
 		pages: Union[list[str], dict] = {} if with_subcats else []
 
@@ -330,7 +350,22 @@ class MediaWikiTools:
 	            pages_list: list[str] = [],
 	            get_subcats: bool = False,
 	            use_lists: bool = False) -> list[str]:
+		"""Get a subset (or superset) of pages.
 
+		Args:
+				categories (Union[list[str], str]): [description]
+				operation (str): [description]
+				pages_list (list[str], optional): [description]. Defaults to [].
+				get_subcats (bool, optional): [description]. Defaults to False.
+				use_lists (bool, optional): [description]. Defaults to False.
+
+		Raises:
+				Exception: [description]
+				Exception: [description]
+
+		Returns:
+				list[str]: [description]
+		"""
 		operation_dict = {
 		    'intersection': 'intersection_update',
 		    'i': 'intersection_update',
@@ -399,7 +434,15 @@ class MediaWikiTools:
 
 		return list(page_set)
 
-	def get_info(pages: Union[list[str], str]):
+	def get_info(self, pages: Union[list[str], str]):
+		"""Not yet implemented.
+
+		Args:
+				pages (Union[list[str], str]): [description]
+
+		Raises:
+				NotImplementedError: [description]
+		"""
 		raise NotImplementedError()
 		# parsed_wikitext = mwp.parse(wikitext)
 		# get params dict from parsed template

@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "e49ac6c74fc0e09c2dea33365b8cc5c37e999191744b97f1be41cc59120a500a"
+            "sha256": "40ea2f68e0e7eb47ca92d61e5b253171aac55c0569b99c110b398cadcd56ae65"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -211,6 +211,14 @@
             "markers": "python_version >= '3.5'",
             "version": "==5.0.9"
         },
+        "docutils": {
+            "hashes": [
+                "sha256:686577d2e4c32380bb50cbb22f575ed742d58168cee37e99117a854bcd88f125",
+                "sha256:cf316c8370a737a022b72b56874f6602acf974a37a9fba42ec2876387549fc61"
+            ],
+            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4'",
+            "version": "==0.17.1"
+        },
         "editorconfig": {
             "hashes": [
                 "sha256:57f8ce78afcba15c8b18d46b5170848c88d56fd38f05c2ec60dbbfcb8996e89e",
@@ -233,6 +241,29 @@
             ],
             "index": "pypi",
             "version": "==3.9.2"
+        },
+        "flake8-docstrings": {
+            "hashes": [
+                "sha256:99cac583d6c7e32dd28bbfbef120a7c0d1b6dde4adb5a9fd441c4227a6534bde",
+                "sha256:9fe7c6a306064af8e62a055c2f61e9eb1da55f84bb39caef2b84ce53708ac34b"
+            ],
+            "index": "pypi",
+            "version": "==1.6.0"
+        },
+        "flake8-polyfill": {
+            "hashes": [
+                "sha256:12be6a34ee3ab795b19ca73505e7b55826d5f6ad7230d31b18e106400169b9e9",
+                "sha256:e44b087597f6da52ec6393a709e7108b2905317d0c0b744cdca6208e670d8eda"
+            ],
+            "version": "==1.0.2"
+        },
+        "flake8-rst-docstrings": {
+            "hashes": [
+                "sha256:3045794e1c8467fba33aaea5c246b8369efc9c44ef8b0b20199bb6df7a4bd47b",
+                "sha256:565bbb391d7e4d0042924102221e9857ad72929cdd305b26501736ec22c1451a"
+            ],
+            "index": "pypi",
+            "version": "==0.2.3"
         },
         "flake8-tabs": {
             "hashes": [
@@ -335,6 +366,14 @@
             "markers": "python_version >= '3.6'",
             "version": "==0.8.2"
         },
+        "pep8-naming": {
+            "hashes": [
+                "sha256:4a8daeaeb33cfcde779309fc0c9c0a68a3bbe2ad8a8308b763c5068f86eb9f37",
+                "sha256:bb2455947757d162aa4cad55dba4ce029005cd1692f2899a21d51d8630ca7841"
+            ],
+            "index": "pypi",
+            "version": "==0.12.1"
+        },
         "pexpect": {
             "hashes": [
                 "sha256:0b48a55dcb3c05f3329815901ea4fc1537514d6ba867a152b581d69ae3710937",
@@ -388,6 +427,14 @@
             ],
             "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'",
             "version": "==2.7.0"
+        },
+        "pydocstyle": {
+            "hashes": [
+                "sha256:1d41b7c459ba0ee6c345f2eb9ae827cab14a7533a88c5c6f7e94923f72df92dc",
+                "sha256:6987826d6775056839940041beef5c08cc7e3d71d63149b48e36727f70144dc4"
+            ],
+            "markers": "python_version >= '3.6'",
+            "version": "==6.1.1"
         },
         "pyflakes": {
             "hashes": [
@@ -472,6 +519,12 @@
             "markers": "python_version >= '3.6'",
             "version": "==22.2.1"
         },
+        "restructuredtext-lint": {
+            "hashes": [
+                "sha256:d3b10a1fe2ecac537e51ae6d151b223b78de9fafdd50e5eb6b08c243df173c80"
+            ],
+            "version": "==1.3.2"
+        },
         "six": {
             "hashes": [
                 "sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926",
@@ -479,6 +532,13 @@
             ],
             "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'",
             "version": "==1.16.0"
+        },
+        "snowballstemmer": {
+            "hashes": [
+                "sha256:b51b447bea85f9968c13b650126a888aabd4cb4463fca868ec596826325dedc2",
+                "sha256:e997baa4f2e9139951b6f4c631bad912dfd3c792467e2f03d7239464af90e914"
+            ],
+            "version": "==2.1.0"
         },
         "toml": {
             "hashes": [
