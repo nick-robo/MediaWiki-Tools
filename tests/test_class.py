@@ -11,12 +11,19 @@ wiki_list = ('harrypotter.fandom.com',
 wiki_list_no_api = ('https://proteopedia.org', 'https://www.werelate.org/')
 
 
-@pytest.fixture()
-def check_pagelist_equivalent(reslist1: list[str],
-                              reslist2: list[str]) -> None:
+def assert_pagelist_equivalent(reslist1: list[str],
+                               reslist2: list[str]) -> None:
+	"""Check equivalence of pagelists.
+
+	Args:
+			reslist1 (list[str]): [description]
+			reslist2 (list[str]): [description]
+	"""
 	# TODO: Flexibly check whether get pages results are equivalent
 	# 			up to deletions and recent changes
-	raise NotImplementedError()
+	assert set(reslist1) == set(reslist2), \
+                 f'API and non-API results differ: \
+					{DeepDiff(reslist1, reslist2, ignore_order=True)}'
 
 
 @pytest.mark.parametrize('page', wiki_list)
@@ -50,28 +57,20 @@ def test_class_get_pages():
 	res_no_api = ws.get_pages(cats[0], use_api=False)
 
 	assert len(res_api) != 0
-	assert set(res_api) == set(res_no_api), \
-           f'API and non-API results differ: \
-					{DeepDiff(res_api, res_no_api, ignore_order=True)}'
+	assert_pagelist_equivalent(res_api, res_no_api)
 
 	res = ws.get_pages(cats[1])
-	assert set(res_api) == set(res), \
-           f'API and non-API results differ: \
-					{DeepDiff(res_api, res_no_api, ignore_order=True)}'
+	assert_pagelist_equivalent(res_api, res)
 
 	res = ws.get_pages(cats[2])
-	assert set(res_api) == set(res), \
-           f'API and non-API results differ: \
-					{DeepDiff(res_api, res_no_api, ignore_order=True)}'
+	assert_pagelist_equivalent(res_api, res)
 
 	# test get_subcats
 	res_api = ws.get_pages(cats[0], get_subcats=True)
 	res_no_api = ws.get_pages(cats[0], get_subcats=True, use_api=False)
 
 	assert res_api
-	assert set(res_api) == set(res_no_api), \
-           f'API and non-API results differ: \
-					{DeepDiff(res_api, res_no_api, ignore_order=True)}'
+	assert_pagelist_equivalent(res_api, res_no_api)
 
 	# test recursive
 	res_api = ws.get_pages(cats[0],
@@ -91,3 +90,37 @@ def test_class_get_pages():
 	# check missing or added categories
 	assert not diff.get('dictionary_item_removed')
 	assert not diff.get('dictionary_item_added')
+
+
+def test_get_set():
+	ws = MediaWikiTools('en.wikipedia.org')
+	assert ws.has_api
+
+	res_api = ws.get_set(['Countries in Asia', 'Countries_in_Europe'],
+	                     operation='union')
+
+	res_no_api = ws.get_set(['Countries in Asia', 'Countries_in_Europe'],
+	                        operation='union',
+	                        use_api=False)
+
+	assert_pagelist_equivalent(res_api, res_no_api)
+
+	res_api = ws.get_set(['Countries in Asia', 'Countries_in_Europe'],
+	                     operation='&')
+
+	res_no_api = ws.get_set(['Countries in Asia', 'Countries_in_Europe'],
+	                        operation='&',
+	                        use_api=False)
+
+	assert_pagelist_equivalent(res_api, res_no_api)
+
+	res_api = ws.get_set(['Countries in Asia', 'Countries_in_Europe'],
+	                     operation='&',
+	                     get_subcats=True)
+
+	res_no_api = ws.get_set(['Countries in Asia', 'Countries_in_Europe'],
+	                        operation='&',
+	                        get_subcats=True,
+	                        use_api=False)
+
+	assert_pagelist_equivalent(res_api, res_no_api)

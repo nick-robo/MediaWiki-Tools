@@ -1,5 +1,7 @@
 # MediaWiki Tools
 
+[![Coverage Status](https://coveralls.io/repos/github/nicholas-robertson/MediaWiki-Tools/badge.svg?branch=main)](https://coveralls.io/github/nicholas-robertson/MediaWiki-Tools?branch=main)
+
 A high level library containing set of tools for for filtering pages using the rich data available in MediaWikis such as categories and info boxes. Uses both web-scraping and API methods (where available and feasible) to gather information.
 
 # Goals

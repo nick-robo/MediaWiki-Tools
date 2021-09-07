@@ -19,7 +19,6 @@ class MediaWikiTools:
 		input_url (str): A url from the wiki to be subsetted.
 		Preferrably the main page or api.
 	"""
-
 	def __init__(self, input_url: str):
 		"""Create MediaWikiTools instance."""
 		if input_url.strip() == '':
@@ -218,7 +217,7 @@ class MediaWikiTools:
 		if self.has_api and use_api:
 			cat_name = None
 
-			if any([x in input_link for x in self.base_url.split('/') if x]):
+			if any(x in input_link for x in self.base_url.split('/') if x):
 				i = input_link.split('/').index(self.page_name)
 				cat_name = '/'.join(input_link.split('/')[i + 1:])
 				cat_name = cat_name.split(
@@ -264,7 +263,7 @@ class MediaWikiTools:
 
 		# if no api available
 		else:
-			if any([x in self.base_url for x in ['wikia.', 'fandom.com']]):
+			if any(x in self.base_url for x in ['wikia.', 'fandom.com']):
 				raise NotImplementedError(
 				    'Web scraping not implemented for wikia/fandom.com')
 
@@ -308,6 +307,7 @@ class MediaWikiTools:
 				    if (h := link.get('href')) and self.page_name in h and
 				    # filter lists if get_lists is false
 				    (True if get_lists else 'List ' not in link.text)
+				    and 'Wikipedia:' not in h
 				] if content else []
 
 				if len(next_page) != 0:
@@ -348,7 +348,8 @@ class MediaWikiTools:
 	            operation: str,
 	            pages_list: list[str] = [],
 	            get_subcats: bool = False,
-	            use_lists: bool = False) -> list[str]:
+	            use_lists: bool = False,
+	            use_api: bool = True) -> list[str]:
 		"""Get a subset (or superset) of pages.
 
 		Args:
@@ -390,9 +391,11 @@ class MediaWikiTools:
 			done = set()
 			for comb in combs:
 				# skip if both categories have been intersected
-				if all([x in done for x in comb]):
+				if all(x in done for x in comb):
 					continue
-				lists = self.get_pages(comb[0], list_only=True)
+				lists = self.get_pages(comb[0],
+				                       list_only=True,
+				                       use_api=use_api)
 				# replace underscore and remove plural ([:-1])
 				# assumption: categories are english
 				s = comb[1].replace('_', ' ').lower()
@@ -402,7 +405,7 @@ class MediaWikiTools:
 				if lists:
 					# if list is not empty get links from the first one
 					# (should always be one result)
-					list_pages = self.get_pages(lists[0])
+					list_pages = self.get_pages(lists[0], use_api=use_api)
 					# if page_list is not empty, intersect
 					if pages_list:
 						pages_list = set(pages_list).intersection(list_pages)
@@ -417,16 +420,18 @@ class MediaWikiTools:
 		if not categories:
 			raise Exception('Invalid argument')
 		elif len(categories) == 1:
-			page_set.update(self.get_pages(categories[0]))
+			page_set.update(self.get_pages(categories[0]), use_api=use_api)
 		elif type(categories) == str:
-			page_set.update(self.get_pages(categories))
+			page_set.update(self.get_pages(categories), use_api=use_api)
 		else:
 			for category in categories:
 				if not page_set:
-					page_set.update(self.get_pages(category, get_subcats))
+					page_set.update(
+					    self.get_pages(category, get_subcats, use_api=use_api))
 					continue
-				getattr(page_set,
-				        operator)(self.get_pages(category, get_subcats))
+				getattr(page_set, operator)(self.get_pages(category,
+				                                           get_subcats,
+				                                           use_api=use_api))
 
 		if pages_list:
 			getattr(page_set, operator)(pages_list)
@@ -447,3 +452,6 @@ class MediaWikiTools:
 		# get params dict from parsed template
 		# p_dict = {
 		# (kv := p.split('=', 1))[0].strip(): kv[1].strip() for p in biobox.params}
+
+
+# %%
