@@ -11,7 +11,7 @@ from pprint import pprint
 # import mwparserfromhell as mwp
 
 
-class WikiSubsetter:
+class MediaWikiTools:
 	def __init__(self, input_url: str):
 		"""Create WikiSubsetter object from a MediaWiki page.
 
@@ -110,7 +110,7 @@ class WikiSubsetter:
 			self.api_url = None
 			warn('Could not find API, web scraping will be used')
 
-	def __filter_pagelist(self, page_list: list[str], get_lists: bool,
+	def _filter_pagelist(self, page_list: list[str], get_lists: bool,
 	                      list_only: bool) -> list[str]:
 		# TODO: Figure out better method to find lists
 
@@ -207,7 +207,7 @@ class WikiSubsetter:
 			                                             results=None)
 
 			# add current category links to result
-			pages_res = self.__filter_pagelist(pages_res,
+			pages_res = self._filter_pagelist(pages_res,
 			                                   get_lists=get_lists,
 			                                   list_only=list_only)
 			if with_subcats:
@@ -226,7 +226,7 @@ class WikiSubsetter:
 					                           _base=False)
 					if with_subcats:
 						# filter each sublist
-						pages[cat] = self.__filter_pagelist(
+						pages[cat] = self._filter_pagelist(
 						    pages_res,
 						    get_lists=get_lists,
 						    list_only=list_only) if type(
@@ -236,7 +236,7 @@ class WikiSubsetter:
 
 			if not with_subcats:
 				# filter pagelist once
-				pages = self.__filter_pagelist(pages,
+				pages = self._filter_pagelist(pages,
 				                               get_lists=get_lists,
 				                               list_only=list_only)
 
