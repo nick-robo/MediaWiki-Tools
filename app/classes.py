@@ -188,8 +188,8 @@ class WikiSubsetter:
 		
 		Note:
 			API and non-API methods may return different results based on \
-			how recently the category page was updated. API mehtod should \
-			be considered correct.
+			how recently the category/list page was updated. API mehtod \
+			should be considered correct.
 		"""
 		pages: Union[list[str], dict] = {} if with_subcats else []
 
