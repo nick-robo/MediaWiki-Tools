@@ -31,7 +31,7 @@ jobs:
         python -m pipenv install
     - name: Test with pytest
       run: |
-        pytest --cov=MediaWiki-Tools
+        pipenv run pytest --cov=MediaWiki-Tools
     - name: Coveralls GitHub Action
       uses: coverallsapp/github-action@1.1.3
       with:
