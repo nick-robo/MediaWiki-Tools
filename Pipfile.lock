@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "b6dc2947085dbe34c63bb41145aadb79d436d1ece64661e965a87b665fd2c46e"
+            "sha256": "e49ac6c74fc0e09c2dea33365b8cc5c37e999191744b97f1be41cc59120a500a"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -40,6 +40,14 @@
             "markers": "python_version >= '3'",
             "version": "==2.0.4"
         },
+        "deepdiff": {
+            "hashes": [
+                "sha256:dd79b81c2d84bfa33aa9d94d456b037b68daff6bb87b80dfaa1eca04da68b349",
+                "sha256:e054fed9dfe0d83d622921cbb3a3d0b3a6dd76acd2b6955433a0a2d35147774a"
+            ],
+            "index": "pypi",
+            "version": "==5.5.0"
+        },
         "idna": {
             "hashes": [
                 "sha256:14475042e284991034cb48e06f6851428fb14c4dc953acd9be9a5e95c7b6dd7a",
@@ -76,6 +84,13 @@
             ],
             "index": "pypi",
             "version": "==0.6.3"
+        },
+        "ordered-set": {
+            "hashes": [
+                "sha256:ba93b2df055bca202116ec44b9bead3df33ea63a7d5827ff8e16738b97f33a95"
+            ],
+            "markers": "python_version >= '3.5'",
+            "version": "==4.0.2"
         },
         "pymediawiki": {
             "hashes": [
