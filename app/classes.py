@@ -43,7 +43,6 @@ class MediaWikiTools:
 		if self.parsed_url.path:
 			path = self.parsed_url.path.replace('/', '%')
 			match = re.match('%(.*?)%', path)
-
 		self.page_name = match.group(1) if match else None
 
 		page = requests.get(self.base_url)
