@@ -5,7 +5,6 @@ from bs4 import BeautifulSoup
 from urllib.parse import urlparse, quote
 import re
 from typing import Union
-from itertools import combinations
 from warnings import warn
 from mediawiki import MediaWiki
 # from pprint import pprint
@@ -19,6 +18,7 @@ class MediaWikiTools:
 		input_url (str): A url from the wiki to be subsetted.
 		Preferrably the main page or api.
 	"""
+
 	def __init__(self, input_url: str):
 		"""Create MediaWikiTools instance."""
 		if input_url.strip() == '':
@@ -328,7 +328,6 @@ class MediaWikiTools:
 			# if input_link is list
 			else:
 				content = data.find(id="mw-content-text").find_all('a')
-				if 
 				links = [
 				    x.get('href') for x in content
 				    if len(x) == 1 and not x.get('class')
