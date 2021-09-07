@@ -328,6 +328,7 @@ class MediaWikiTools:
 			# if input_link is list
 			else:
 				content = data.find(id="mw-content-text").find_all('a')
+				if 
 				links = [
 				    x.get('href') for x in content
 				    if len(x) == 1 and not x.get('class')
@@ -348,7 +349,6 @@ class MediaWikiTools:
 	            operation: str,
 	            pages_list: list[str] = [],
 	            get_subcats: bool = False,
-	            use_lists: bool = False,
 	            use_api: bool = True) -> list[str]:
 		"""Get a subset (or superset) of pages.
 
@@ -383,38 +383,6 @@ class MediaWikiTools:
 
 		page_set = set()
 		operator = operation_dict[operation]
-
-		# use lists to increase efficiency
-		# caveat: slightly slower if list does not exist
-		if use_lists and operation == 'intersection' and len(categories) > 1:
-			combs = combinations(categories, 2)
-			done = set()
-			for comb in combs:
-				# skip if both categories have been intersected
-				if all(x in done for x in comb):
-					continue
-				lists = self.get_pages(comb[0],
-				                       list_only=True,
-				                       use_api=use_api)
-				# replace underscore and remove plural ([:-1])
-				# assumption: categories are english
-				s = comb[1].replace('_', ' ').lower()
-				s = s[:-1] if s[-1] == 's' else s
-				# match category string s in lists
-				lists = [x for x in lists if s in x.lower().replace('_', ' ')]
-				if lists:
-					# if list is not empty get links from the first one
-					# (should always be one result)
-					list_pages = self.get_pages(lists[0], use_api=use_api)
-					# if page_list is not empty, intersect
-					if pages_list:
-						pages_list = set(pages_list).intersection(list_pages)
-					else:
-						pages_list.extend(list_pages)
-					# remove list items from categories
-					done.update(comb)
-			if len(done) == len(set(categories)):
-				return list(pages_list)
 
 		# edge cases
 		if not categories:
