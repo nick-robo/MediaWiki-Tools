@@ -1,3 +1,4 @@
+"""Test module for MediaWikiTools class."""
 from app.classes import MediaWikiTools
 import pytest
 from deepdiff import DeepDiff
