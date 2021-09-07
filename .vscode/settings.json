@@ -5,10 +5,12 @@
     "python.testing.pytestArgs": [
         "tests"
     ],
-    "python.linting.flake8Args": [
-    ],
+    "python.linting.flake8Args": [],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
     "python.formatting.provider": "yapf",
-    "editor.tabSize": 2
+    "editor.tabSize": 2,
+    "cSpell.words": [
+        "mwparserfromhell"
+    ]
 }

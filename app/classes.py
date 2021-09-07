@@ -1,13 +1,13 @@
 # %%
 import requests
 from bs4 import BeautifulSoup
-from urllib.parse import urlparse, quote, unquote
+from urllib.parse import urlparse, quote
 import re
 from typing import Union
 from itertools import combinations
 from warnings import warn
 from mediawiki import MediaWiki
-from pprint import pprint
+# from pprint import pprint
 # import mwparserfromhell as mwp
 
 
@@ -46,7 +46,7 @@ class MediaWikiTools:
 
 		page = requests.get(self.base_url)
 		if not page.ok:
-			raise Exception(f"Couldn't conntect to {self.base_url}")
+			raise Exception(f"Couldn't connect to {self.base_url}")
 
 		# method 2: get page name from landing page
 		if not self.page_name:
@@ -111,7 +111,7 @@ class MediaWikiTools:
 			warn('Could not find API, web scraping will be used')
 
 	def _filter_pagelist(self, page_list: list[str], get_lists: bool,
-	                      list_only: bool) -> list[str]:
+	                     list_only: bool) -> list[str]:
 		# TODO: Figure out better method to find lists
 
 		filtered = []
@@ -132,6 +132,7 @@ class MediaWikiTools:
 	def get_data(self,
 	             input: str,
 	             print_pretty: bool = False) -> BeautifulSoup:
+
 		if 'http' in input:
 			page = requests.get(input)
 		else:
@@ -147,8 +148,10 @@ class MediaWikiTools:
 			raise Exception(f'Failed on page {page}')
 
 		data = BeautifulSoup(page.text, 'html.parser')
+
 		if print_pretty:
-			print()
+			print(data.prettify())
+
 		return data
 
 	def get_pages(self,
@@ -208,8 +211,8 @@ class MediaWikiTools:
 
 			# add current category links to result
 			pages_res = self._filter_pagelist(pages_res,
-			                                   get_lists=get_lists,
-			                                   list_only=list_only)
+			                                  get_lists=get_lists,
+			                                  list_only=list_only)
 			if with_subcats:
 				pages['self'] = pages_res
 			else:
@@ -237,8 +240,8 @@ class MediaWikiTools:
 			if not with_subcats:
 				# filter pagelist once
 				pages = self._filter_pagelist(pages,
-				                               get_lists=get_lists,
-				                               list_only=list_only)
+				                              get_lists=get_lists,
+				                              list_only=list_only)
 
 		# if no api available
 		else:
@@ -276,7 +279,6 @@ class MediaWikiTools:
 							    use_api=use_api,
 							    _base=False)
 							if with_subcats:
-								subcat_name = input_link.text
 								pages[input_link.text] = pages_res
 							else:
 								pages.extend(pages_res)
@@ -401,6 +403,5 @@ class MediaWikiTools:
 		raise NotImplementedError()
 		# parsed_wikitext = mwp.parse(wikitext)
 		# get params dict from parsed template
-		# p_dict = {(kv := p.split('=', 1))[
-		#	 0].strip(): kv[1].strip() for p in biobox.params}
-
+		# p_dict = {
+		# (kv := p.split('=', 1))[0].strip(): kv[1].strip() for p in biobox.params}

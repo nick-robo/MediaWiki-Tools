@@ -11,8 +11,9 @@ wiki_list_no_api = ('https://proteopedia.org', 'https://www.werelate.org/')
 
 
 @pytest.fixture()
-def check_pagelist_equivalent(reslist1: list[str], reslist2: list[str]) -> None:
-	# TODO: Flexibly check whether get pages results are equivalent 
+def check_pagelist_equivalent(reslist1: list[str],
+                              reslist2: list[str]) -> None:
+	# TODO: Flexibly check whether get pages results are equivalent
 	# 			up to deletions and recent changes
 	raise NotImplementedError()
 
@@ -49,17 +50,18 @@ def test_class_get_pages():
 
 	assert len(res_api) != 0
 	assert set(res_api) == set(res_no_api), \
-     f'API and non-API results differ: {DeepDiff(res_api, res_no_api, ignore_order=True)}'
+        f'API and non-API results differ: \
+					{DeepDiff(res_api, res_no_api, ignore_order=True)}'
 
 	res = ws.get_pages(cats[1])
 	assert set(res_api) == set(res), \
-     f'API and non-API results differ: {DeepDiff(res_api, res_no_api, ignore_order=True)}'
-
+        f'API and non-API results differ: \
+					{DeepDiff(res_api, res_no_api, ignore_order=True)}'
 
 	res = ws.get_pages(cats[2])
 	assert set(res_api) == set(res), \
-     f'API and non-API results differ: {DeepDiff(res_api, res_no_api, ignore_order=True)}'
-
+        f'API and non-API results differ: \
+					{DeepDiff(res_api, res_no_api, ignore_order=True)}'
 
 	# test get_subcats
 	res_api = ws.get_pages(cats[0], get_subcats=True)
@@ -67,7 +69,8 @@ def test_class_get_pages():
 
 	assert res_api
 	assert set(res_api) == set(res_no_api), \
-     f'API and non-API results differ: {DeepDiff(res_api, res_no_api, ignore_order=True)}'
+        f'API and non-API results differ: \
+					{DeepDiff(res_api, res_no_api, ignore_order=True)}'
 
 	# test recursive
 	res_api = ws.get_pages(cats[0],
