@@ -1,5 +1,6 @@
 from app.classes import WikiSubsetter
 import pytest
+from deepdiff import DeepDiff
 
 wiki_list = ('harrypotter.fandom.com',
              'https://en.wikivoyage.org/wiki/Main_Page',
@@ -59,12 +60,23 @@ def test_class_get_pages():
 	assert len(set(res_api) ^ set(res_no_api)) == 0
 
 	# test recursive
-	# res_api = ws.get_pages(cats[0], get_subcats=True, recursive=True)
-	# res_no_api = ws.get_pages(cats[0],
-	#                           get_subcats=True,
-	#                           recursive=True,
-	#                           use_api=False)
+	res_api = ws.get_pages(cats[0], get_subcats=True, recursive=True)
+	res_no_api = ws.get_pages(cats[0],
+	                          get_subcats=True,
+	                          recursive=True,
+	                          use_api=False)
 
-	# assert len(res_api) != 0
-	# assert len(set(res_api) ^ set(res_no_api)) == 0
-	# assert 'Trig Palin' in res_api
+	assert len(res_api) != 0
+	assert len(set(res_api) ^ set(res_no_api)) == 0
+	assert 'Trig Palin' in res_api
+	res_api = ws.get_pages(cats[0],
+                       get_subcats=True,
+                       with_subcats=True,
+                       recursive=True,
+                       use_api=True)
+
+	res_no_api = ws.get_pages(cats[0],
+														get_subcats=True,
+														recursive=True,
+														with_subcats=True,
+														use_api=False)
