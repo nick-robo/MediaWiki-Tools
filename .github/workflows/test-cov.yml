@@ -29,7 +29,6 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install pipenv
         python -m pipenv install
-        python -m pipenv shell
     - name: Test with pytest
       run: |
         pytest --cov=MediaWiki-Tools
