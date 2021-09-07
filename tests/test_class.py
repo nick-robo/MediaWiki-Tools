@@ -11,7 +11,7 @@ wiki_list = ('harrypotter.fandom.com',
 wiki_list_no_api = ('https://proteopedia.org', 'https://www.werelate.org/')
 
 invalid_list = ('google', 'https://google', 'https://google/search',
-                'https://www.fakewiki.biz/')
+                'https://www.fakewiki.biz/', '	   ')
 
 
 def assert_pagelist_equivalent(reslist1: list[str],
@@ -25,7 +25,7 @@ def assert_pagelist_equivalent(reslist1: list[str],
 	# TODO: Flexibly check whether get pages results are equivalent
 	# 			up to deletions and recent changes
 	assert set(reslist1) == set(reslist2), \
-                                f'API and non-API results differ: \
+                                      f'API and non-API results differ: \
 					{DeepDiff(reslist1, reslist2, ignore_order=True)}'
 
 
@@ -126,6 +126,14 @@ def test_class_get_pages():
 	cat = 'Lists_of_film_directors_by_nationality'
 	res_api = ws.get_pages(cat, get_lists=True, use_api=True)
 	res_no_api = ws.get_pages(cat, get_lists=True, use_api=False)
+
+	assert res_api
+	assert_pagelist_equivalent(res_api, res_no_api)
+
+	# test list_only
+	cat = 'https://en.wikipedia.org/wiki/Category:Azerbaijani_film_directors'
+	res_api = ws.get_pages(cat, list_only=True, use_api=True)
+	res_no_api = ws.get_pages(cat, list_only=True, use_api=False)
 
 	assert res_api
 	assert_pagelist_equivalent(res_api, res_no_api)
