@@ -51,17 +51,17 @@ def test_class_get_pages():
 
 	assert len(res_api) != 0
 	assert set(res_api) == set(res_no_api), \
-        f'API and non-API results differ: \
+           f'API and non-API results differ: \
 					{DeepDiff(res_api, res_no_api, ignore_order=True)}'
 
 	res = ws.get_pages(cats[1])
 	assert set(res_api) == set(res), \
-        f'API and non-API results differ: \
+           f'API and non-API results differ: \
 					{DeepDiff(res_api, res_no_api, ignore_order=True)}'
 
 	res = ws.get_pages(cats[2])
 	assert set(res_api) == set(res), \
-        f'API and non-API results differ: \
+           f'API and non-API results differ: \
 					{DeepDiff(res_api, res_no_api, ignore_order=True)}'
 
 	# test get_subcats
@@ -70,7 +70,7 @@ def test_class_get_pages():
 
 	assert res_api
 	assert set(res_api) == set(res_no_api), \
-        f'API and non-API results differ: \
+           f'API and non-API results differ: \
 					{DeepDiff(res_api, res_no_api, ignore_order=True)}'
 
 	# test recursive
