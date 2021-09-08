@@ -2,6 +2,7 @@
 # %%
 import requests
 from bs4 import BeautifulSoup
+from bs4.element import PageElement
 from urllib.parse import urlparse, quote
 import re
 from typing import Union
@@ -18,7 +19,6 @@ class MediaWikiTools:
 		input_url (str): A url from the wiki to be subsetted.
 		Preferrably the main page or api.
 	"""
-
 	def __init__(self, input_url: str):
 		"""Create MediaWikiTools instance."""
 		# TODO: fails on input wikipedia.org
@@ -129,6 +129,35 @@ class MediaWikiTools:
 				filtered.append(page)
 
 		return filtered
+
+	def _filter_page(self, page: Union[str, PageElement], get_lists: bool,
+	                 list_only: bool) -> bool:
+		# TODO: Add flexible filter list with regex
+		# TODO Figure out a better way to deal with lists
+		filter_words = ['File:']
+
+		if type(page) == PageElement:
+			# check href not None and if it is a page link
+			if not (h := page.get('href')) or self.page_name not in h:
+				return False
+
+			name = page.text
+			# wikipedia learn more
+			if name == 'learn more':
+				return False
+		else:
+			name = page
+
+		if any(word in name for word in filter_words):
+			return False
+		elif get_lists and not list_only:
+			return True
+		elif list_only:
+			return True if 'List ' in name else False
+		elif 'List ' in name:
+			return False
+		else:
+			return True
 
 	def get_data(self,
 	             input: str,
@@ -304,11 +333,7 @@ class MediaWikiTools:
 
 				links = [
 				    link.text for link in content.find_all('a')
-				    # check href not None and if it is a page link
-				    if (h := link.get('href')) and self.page_name in h and
-				    # filter lists if get_lists is false
-				    (True if get_lists else 'List ' not in link.text)
-				    and 'Wikipedia:' not in h
+				    if self._filter_page(link, get_lists, list_only)
 				] if content else []
 
 				if len(next_page) != 0:
@@ -324,10 +349,11 @@ class MediaWikiTools:
 				# assumption: all lists are on first page (>200 lists)
 				links = [
 				    link.text for link in content.find_all('a')
-				    if (h := link.get('href')) and 'List_' in h
+				    if self._filter_page(link, get_lists, list_only)
 				]
-			# if input_link is list
+			# if input_link is a List
 			else:
+				raise NotImplementedError('This is broken')
 				content = data.find(id="mw-content-text")
 				links = [
 				    link.text for link in content.find_all('a')
@@ -427,6 +453,5 @@ class MediaWikiTools:
 ws = MediaWikiTools('en.wikipedia.org')
 cat = 'https://en.wikipedia.org/wiki/Category:Azerbaijani_film_directors'
 res_api = ws.get_pages(cat, list_only=True, use_api=True)
-
 
 # %%
