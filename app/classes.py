@@ -121,10 +121,10 @@ class MediaWikiTools:
 			if 'File:' in page:
 				continue
 
-			if get_lists:
+			if get_lists and not list_only:
 				filtered.append(page)
-			elif list_only and 'List ' in page:
-				filtered.append(page)
+			elif list_only:
+				filtered.append(page) if 'List ' in page else None
 			elif 'List ' not in page:
 				filtered.append(page)
 
@@ -323,15 +323,15 @@ class MediaWikiTools:
 			elif is_category and list_only:
 				# assumption: all lists are on first page (>200 lists)
 				links = [
-				    h for x in content.find_all('a')
-				    if (h := x.get('href')) and 'List_' in h
+				    link.text for link in content.find_all('a')
+				    if (h := link.get('href')) and 'List_' in h
 				]
 			# if input_link is list
 			else:
-				content = data.find(id="mw-content-text").find_all('a')
+				content = data.find(id="mw-content-text")
 				links = [
-				    x.get('href') for x in content
-				    if len(x) == 1 and not x.get('class')
+				    link.text for link in content.find_all('a')
+				    if len(link) == 1 and not link.get('class')
 				]
 
 			if with_subcats:
@@ -420,6 +420,13 @@ class MediaWikiTools:
 		# get params dict from parsed template
 		# p_dict = {
 		# (kv := p.split('=', 1))[0].strip(): kv[1].strip() for p in biobox.params}
+
+
+# %%
+
+ws = MediaWikiTools('en.wikipedia.org')
+cat = 'https://en.wikipedia.org/wiki/Category:Azerbaijani_film_directors'
+res_api = ws.get_pages(cat, list_only=True, use_api=True)
 
 
 # %%
