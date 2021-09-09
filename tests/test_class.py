@@ -25,7 +25,7 @@ def assert_pagelist_equivalent(reslist1: list[str],
 	# TODO: Flexibly check whether get pages results are equivalent
 	# 			up to deletions and recent changes
 	assert set(reslist1) == set(reslist2), \
-                                      f'API and non-API results differ: \
+                                      f'API and non-API results differ: \n\
 					{DeepDiff(reslist1, reslist2, ignore_order=True)}'
 
 
