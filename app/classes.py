@@ -42,7 +42,7 @@ class MediaWikiTools:
 		match = None
 		if self.parsed_url.path:
 			path = self.parsed_url.path.replace('/', '%')
-			match = re.match('%(.*?)%', path)
+			match = re.search('%(.*?)%', path)
 		self.page_name = match.group(1) if match else None
 
 		page = requests.get(self.base_url)
@@ -52,7 +52,7 @@ class MediaWikiTools:
 		# method 2: get page name from landing page
 		if not self.page_name:
 			path = urlparse(page.url).path.replace('/', '%')
-			match = re.match('%(.*?)%', path)
+			match = re.search('%(.*?)%', path)
 			self.page_name = match.group(1) if match else None
 
 		# method 3: search landing page for link to main page
@@ -110,25 +110,6 @@ class MediaWikiTools:
 			self.has_api = False
 			self.api_url = None
 			warn('Could not find API, web scraping will be used')
-
-	def _filter_pagelist(self, page_list: list[str], get_lists: bool,
-	                     list_only: bool) -> list[str]:
-		# TODO: Figure out better method to find lists
-
-		filtered = []
-
-		for page in page_list:
-			if 'File:' in page:
-				continue
-
-			if get_lists and not list_only:
-				filtered.append(page)
-			elif list_only:
-				filtered.append(page) if 'List ' in page else None
-			elif 'List ' not in page:
-				filtered.append(page)
-
-		return filtered
 
 	def _filter_page(self, page: Union[str, PageElement], get_lists: bool,
 	                 list_only: bool) -> bool:
@@ -188,16 +169,16 @@ class MediaWikiTools:
 			page = requests.get(input_page)
 		else:
 			# attempt to get namespace
-			namespace = re.search('([A-Z]\w+)(:)', input_page)
+			namespace = re.search(r'([A-Z]\w+)(:)', input_page)
 			namespace = namespace.group(1) if namespace else None
 
 			# use ':' for RE search
 			if namespace:
-				match = re.search('([:])(.+)', input_page)
+				match = re.search(r'([:])(.+)', input_page)
 				input_page = quote(match.group(2).replace(' ', '_'))
 			else:
 				# get fragment if incomplete url and url encode it
-				match = re.search('([A-Z].+)',input_page)
+				match = re.search(r'([A-Z].+)', input_page)
 				if not match:
 					raise ValueError(f'Invalid input: {input_page}')
 				input_page = quote(match.group(1).replace(' ', '_'))
@@ -285,9 +266,10 @@ class MediaWikiTools:
 			                                             results=None)
 
 			# add current category links to result
-			pages_res = self._filter_pagelist(pages_res,
-			                                  get_lists=get_lists,
-			                                  list_only=list_only)
+			pages_res = [
+			    page for page in pages_res if self._filter_page(
+			        page, get_lists=get_lists, list_only=list_only)
+			]
 			if with_subcats:
 				pages['self'] = pages_res
 			else:
@@ -303,20 +285,20 @@ class MediaWikiTools:
 					                                         and with_subcats),
 					                           _base=False)
 					if with_subcats:
-						# filter each sublist
-						pages[cat] = self._filter_pagelist(
-						    pages_res,
-						    get_lists=get_lists,
-						    list_only=list_only
-						) if not with_subcats else pages_res
+						# filter each sublist if they are not dicts
+						pages[cat] = [
+						    page for page in pages_res if self._filter_page(
+						        page, get_lists=get_lists, list_only=list_only)
+						] if not type(pages_res) == dict else pages_res
 					else:
 						pages.extend(pages_res)
 
 			if not with_subcats:
 				# filter pagelist once
-				pages = self._filter_pagelist(pages,
-				                              get_lists=get_lists,
-				                              list_only=list_only)
+				pages = [
+				    page for page in pages if self._filter_page(
+				        page, get_lists=get_lists, list_only=list_only)
+				]
 
 		# if no api available
 		else:
@@ -479,7 +461,7 @@ class MediaWikiTools:
 
 ws = MediaWikiTools('en.wikipedia.org')
 name = "User:WittyWidi/Afghanistan"
-filtered = ws._filter_page(name, True, False) 
+filtered = ws._filter_page(name, True, False)
 print(filtered)
 
 # %%
