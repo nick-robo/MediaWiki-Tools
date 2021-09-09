@@ -21,7 +21,8 @@ class MediaWikiTools:
 	"""
 	def __init__(self, input_url: str):
 		"""Create MediaWikiTools instance."""
-		# TODO: fails on input wikipedia.org
+		# TODO: fails on input wikipedia.org (without en.)
+		# TODO: check if input is a MediaWiki...
 		if input_url.strip() == '':
 			raise ValueError('Empty wiki url')
 
@@ -456,12 +457,5 @@ class MediaWikiTools:
 		# p_dict = {
 		# (kv := p.split('=', 1))[0].strip(): kv[1].strip() for p in biobox.params}
 
-
-# %%
-
-ws = MediaWikiTools('en.wikipedia.org')
-name = "User:WittyWidi/Afghanistan"
-filtered = ws._filter_page(name, True, False)
-print(filtered)
 
 # %%

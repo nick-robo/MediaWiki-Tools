@@ -67,9 +67,9 @@ def test_class_get_pages():
 	# test get_pages
 	ws = MediaWikiTools('https://en.uncyclopedia.co')
 	cats = [
-	    'Your Mom',
-	    'Your_Mom',
-	    'https://en.uncyclopedia.co/wiki/Category:Your_Mom',
+	    'Tribes of Britain',
+	    'Tribes_of_Britain',
+	    'https://en.uncyclopedia.co/wiki/Category:Tribes_of_Britain',
 	]
 	assert ws.has_api
 
