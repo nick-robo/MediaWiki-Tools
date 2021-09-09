@@ -136,7 +136,7 @@ class MediaWikiTools:
 		# TODO Figure out a better way to deal with lists
 		filter_words = ['File:']
 
-		if type(page) == PageElement:
+		if issubclass(type(page), PageElement):
 			# check href not None and if it is a page link
 			if not (h := page.get('href')) or self.page_name not in h:
 				return False
@@ -147,6 +147,15 @@ class MediaWikiTools:
 				return False
 		else:
 			name = page
+
+		if 'User:' in name:
+			# Get data fails on user pages
+			data = self.get_data(name)
+			wip_box = data.find(class_='ombox-notice')
+			if wip_box:
+				ombox_text = wip_box.find(class_='mbox-text').text
+				if 'work-in-progress' in ombox_text:
+					return False
 
 		if any(word in name for word in filter_words):
 			return False
@@ -160,7 +169,7 @@ class MediaWikiTools:
 			return True
 
 	def get_data(self,
-	             input: str,
+	             input_page: str,
 	             print_pretty: bool = False) -> BeautifulSoup:
 		"""Get BeautifulSoup page data from category name or url.
 
@@ -175,16 +184,34 @@ class MediaWikiTools:
 		Returns:
 				BeautifulSoup: BeautifulSoup object of input page.
 		"""
-		if 'http' in input:
-			page = requests.get(input)
+		if 'http' in input_page:
+			page = requests.get(input_page)
 		else:
-			# get fragment if incomplete url and url encode it
-			input = quote(input.split('/')[-1].replace(' ', '_'))
-			page = requests.get(self.page_base_url + 'Category:' + input)
+			# attempt to get namespace
+			namespace = re.search('([A-Z]\w+)(:)', input_page)
+			namespace = namespace.group(1) if namespace else None
+
+			# use ':' for RE search
+			if namespace:
+				match = re.search('([:])(.+)', input_page)
+				input_page = quote(match.group(2).replace(' ', '_'))
+			else:
+				# get fragment if incomplete url and url encode it
+				match = re.search('([A-Z].+)',input_page)
+				if not match:
+					raise ValueError(f'Invalid input: {input_page}')
+				input_page = quote(match.group(1).replace(' ', '_'))
+
+			if namespace:
+				page = requests.get(self.page_base_url + namespace + ':' +
+				                    input_page)
+			else:
+				page = requests.get(self.page_base_url + 'Category:' +
+				                    input_page)
 
 			# if not category
 			if not page.ok:
-				page = requests.get(self.page_base_url + input)
+				page = requests.get(self.page_base_url + input_page)
 
 		if not page.ok:
 			raise Exception(f'Failed on page {page}')
@@ -280,8 +307,8 @@ class MediaWikiTools:
 						pages[cat] = self._filter_pagelist(
 						    pages_res,
 						    get_lists=get_lists,
-						    list_only=list_only) if type(
-						        pages_res) is not dict else pages_res
+						    list_only=list_only
+						) if not with_subcats else pages_res
 					else:
 						pages.extend(pages_res)
 
@@ -451,7 +478,8 @@ class MediaWikiTools:
 # %%
 
 ws = MediaWikiTools('en.wikipedia.org')
-cat = 'https://en.wikipedia.org/wiki/Category:Azerbaijani_film_directors'
-res_api = ws.get_pages(cat, list_only=True, use_api=True)
+name = "User:WittyWidi/Afghanistan"
+filtered = ws._filter_page(name, True, False) 
+print(filtered)
 
 # %%
