@@ -1,6 +1,7 @@
 """Test module for MediaWikiTools class."""
 from app.classes import MediaWikiTools
 import pytest
+import requests
 from deepdiff import DeepDiff
 
 wiki_list = ('harrypotter.fandom.com',
@@ -54,6 +55,15 @@ def test_class_init_invalid(page):
 
 
 def test_class_get_pages():
+	wikis = [
+		'https://lgbt.wikia.org/wiki/Main_Page',
+		'https://en.uncyclopedia.co',
+		'https://harrypotter.fandom.com'
+	]
+	for wiki in wikis:
+		if not requests.get(wiki, timeout=5).ok:
+			pytest.skip(f'{wiki} seems to be down.')
+
 	# assert raises exception if no api with wikia/fandom
 	with pytest.raises(Exception):
 		ws = MediaWikiTools('https://lgbt.wikia.org/wiki/Main_Page')
@@ -140,6 +150,8 @@ def test_class_get_pages():
 
 
 def test_get_set():
+	if not requests.get('https://en.wikipedia.org', timeout=5).ok:
+		pytest.skip('en.wikipedia.org seems to be down.')
 	ws = MediaWikiTools('en.wikipedia.org')
 	assert ws.has_api
 

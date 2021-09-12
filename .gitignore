@@ -3,3 +3,4 @@
 app/__pycache__/
 tests/__pycache__/
 .vscode/*
+cov.xml
