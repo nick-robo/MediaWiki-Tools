@@ -436,7 +436,7 @@ class MediaWikiTools:
 
 		if type(operations) == list:
 			# the first operation is always a union
-			operations = ['u'].extend(operations)
+			operations = ['u'] + operations
 			# check that the number of inputs equals the number of operations
 			assert (len(categories) + bool(pages_list)) == len(operations)
 			operators = []
