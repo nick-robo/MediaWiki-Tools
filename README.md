@@ -47,36 +47,29 @@ Question: Which countries in Asia or Europe use english as spoken Language?
 
 Answer:
 ```python
-eurasia = wiki.get_set(['Countries in Asia', 
-                        'Countries in Europe'], 
-                       'or')
-
-wiki.get_set(['English-speaking countries and territories'], 
-             'and', 
-             pages_list=eurasia)
-
-# ['Malta',
-#  'Republic of Ireland',
-#  'Philippines',
-#  'Pakistan',
+wiki.get_set(['Countries in Asia', 'Countries in Europe',
+              'English-speaking countries and territories'], 
+             ['or','and'])
+# ['Philippines',
 #  'United Kingdom',
-#  'Scotland',
-#  'Bahrain',
-#  'Singapore',
 #  'Brunei',
-#  'India']
+#  'Malta',
+#  'India',
+#  'Pakistan',
+#  'Scotland',
+#  'Republic of Ireland',
+#  'Singapore',
+#  'Bahrain']
 ```
 
 Question: Which of these countries are not island nations?
 
 Answer:
 ```python
-island_countries = wiki.get_pages('Island countries')
-eurasia_en = wiki.get_set(['English-speaking countries and territories'], 
-                          'and', 
-                          pages_list=eurasia)
-# set difference is not currently implemented because it is not commutative.
-set(eurasia_en).difference(island_countries)
-# {'India', 'Pakistan'}
+wiki.get_set(['Countries in Asia', 'Countries in Europe',
+              'English-speaking countries and territories',
+              'Island countries'], 
+             ['or', 'and', 'not'])
+# ['Pakistan', 'India']
 ```
 
