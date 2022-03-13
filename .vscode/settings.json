@@ -11,6 +11,8 @@
     "python.formatting.provider": "yapf",
     "editor.tabSize": 2,
     "cSpell.words": [
-        "mwparserfromhell"
+        "mbox",
+        "mwparserfromhell",
+        "ombox"
     ]
 }

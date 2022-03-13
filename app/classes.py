@@ -19,6 +19,7 @@ class MediaWikiTools:
 		input_url (str): A url from the wiki to be subsetted.
 		Preferrably the main page or api.
 	"""
+
 	def __init__(self, input_url: str):
 		"""Create MediaWikiTools instance."""
 		# TODO: fails on input wikipedia.org (without en.)
