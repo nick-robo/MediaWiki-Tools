@@ -1,3 +1,19 @@
+Metadata-Version: 2.1
+Name: MediaWiki-Tools
+Version: 0.0.1
+Summary: Tools for getting data from MediaWiki websites
+Home-page: https://github.com/nick-robo/MediaWiki-Tools
+Author: Nicholas Robertson
+License: UNKNOWN
+Project-URL: Bug Tracker, https://github.com/nick-robo/MediaWiki-Tools/issues
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+License-File: LICENCE
+
 # MediaWiki Tools
 
 [![Coverage Status](https://coveralls.io/repos/github/nick-robo/MediaWiki-Tools/badge.svg?branch=main)](https://coveralls.io/github/nick-robo/MediaWiki-Tools?branch=main)
@@ -16,3 +32,5 @@ A high level library containing set of tools for for filtering pages using the r
 # Usage
 
 TODO
+
+
