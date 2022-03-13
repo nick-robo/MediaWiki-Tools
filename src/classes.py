@@ -390,18 +390,20 @@ class MediaWikiTools:
 		"""Get a subset (or superset) of pages.
 
 		Args:
-				categories (Union[list[str], str]): [description]
-				operation (str): [description]
-				pages_list (list[str], optional): [description]. Defaults to [].
-				get_subcats (bool, optional): [description]. Defaults to False.
-				use_lists (bool, optional): [description]. Defaults to False.
+				categories (Union[list[str], str]): String or list (str) of category names
+					operation (str): Intersection ('intersection', 'i', 'and', '&') or union
+					('union', 'u', 'or', '|')
 
-		Raises:
-				Exception: [description]
-				Exception: [description]
+				pages_list (list[str], optional): List of page to merge with queried ones
+					using selected operation. Defaults to [].
+
+				get_subcats (bool, optional): Get pages first level subcategories. Defaults
+					to False.
+				use_api (bool, optional): Use the MediaWiki API if available. Defaults to
+					True.
 
 		Returns:
-				list[str]: [description]
+				list[str]: List of pages resulting from the operations requested.
 		"""
 		operation_dict = {
 		    'intersection': 'intersection_update',
