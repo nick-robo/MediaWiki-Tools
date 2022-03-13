@@ -220,37 +220,37 @@ class MediaWikiTools:
 		Args:
 			input_link (str): Url or name of category or list.
 
-			get_subcats (bool, optional): If True, gets links from first \
-				level subcategories. Defaults to False.
+			get_subcats (bool, optional): If True, gets links from first
+			 level subcategories. Defaults to False.
 
-			with_subcats (bool, optional): Return dict of categories and \
-				corresponding pages.
+			with_subcats (bool, optional): Return dict of categories and
+			 corresponding pages.
 
-			get_lists (bool, optional): Gets lists in addition to pages. \
-				Assumption (problematic): lists have `'List_'` in their name \
+			get_lists (bool, optional): Gets lists in addition to pages.
+			Assumption (problematic): lists have `'List_'` in their name.
+			Defaults to False.
+
+			recursive (bool, optional): Recursively get links from
+			 subcategories. Defaults to False.
+
+			list_only (bool, optional): Only get links that are lists.
+			Assumption (slightly risky, only no api):
+				Lists are on the first page.
 				Defaults to False.
 
-			recursive (bool, optional): Recursively get links from \
-				subcategories. Defaults to False.
-
-			list_only (bool, optional): Only get links that are lists. \
-				Assumption (slightly risky, only no api): \
-				Lists are on the first page. \
-				Defaults to False.
-
-			use_api (bool, optional): Whether to use the api (if present). \
-				Defaults to true.
+			use_api (bool, optional): Whether to use the api (if present).
+			Defaults to true.
 
 		Returns:
 			list[str] or dict: A list of pages.
 		
 		Note:
-			API and non-API methods may return different results based on \
-			how recently the category/list page was updated. API mehtod \
-			should be considered correct.
+			API and non-API methods may return different results based on
+			 how recently the category/list page was updated. API mehtod
+			 should be considered correct.
 		Note 2:
-			If recursive and with_subcats the function with return a nested \
-				dictionary.\n
+			If recursive and with_subcats the function with return a nested
+			 dictionary.
 		"""
 		pages: Union[list[str], dict] = {} if with_subcats else []
 
