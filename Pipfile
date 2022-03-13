@@ -28,6 +28,6 @@ flake8-rst-docstrings = "*"
 pytest-cov = "*"
 build = "*"
 twine = "*"
-sphinx = "*"
+pdoc = "*"
 
 [requires]
