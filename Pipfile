@@ -8,6 +8,9 @@ url = "https://test.pypi.org/simple/"
 verify_ssl = true
 name = "testpypi"
 
+[scripts]
+make_docs = pdoc src/ -d google -o docs/
+
 [packages]
 beautifulsoup4 = "*"
 requests = "*"

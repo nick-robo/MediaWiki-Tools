@@ -16,8 +16,8 @@ class MediaWikiTools:
 	"""MediaWikiTools object of a MediaWiki page.
 
 	Args:
-		input_url (str): A url from the wiki to be subsetted.
-		Preferrably the main page or api.
+		input_url (str): A url from the wiki to be subsetted. Preferrably, the main
+			page or API of the wiki.
 	"""
 
 	def __init__(self, input_url: str):
@@ -158,8 +158,8 @@ class MediaWikiTools:
 
 		Args:
 				input (str): Category name or url.
-				print_pretty (bool, optional): Pretty print data for debug. \
-					Defaults to False.
+				print_pretty (bool, optional): Pretty print data for debuging. Defaults to
+					False.
 
 		Raises:
 				Exception: If request fails.
@@ -220,37 +220,36 @@ class MediaWikiTools:
 		Args:
 			input_link (str): Url or name of category or list.
 
-			get_subcats (bool, optional): If True, gets links from first
-			 level subcategories. Defaults to False.
+			get_subcats (bool, optional): If True, gets links from first level
+				subcategories. Defaults to False.
 
 			with_subcats (bool, optional): Return dict of categories and
-			 corresponding pages.
+				corresponding pages.
 
 			get_lists (bool, optional): Gets lists in addition to pages.
-			Assumption (problematic): lists have `'List_'` in their name.
-			Defaults to False.
+				Assumes (problematic) lists have `'List_'` in their name.
+				Defaults to False.
 
 			recursive (bool, optional): Recursively get links from
-			 subcategories. Defaults to False.
+				subcategories. Defaults to False.
 
 			list_only (bool, optional): Only get links that are lists.
-			Assumption (slightly risky, only no api):
-				Lists are on the first page.
+				Assumes (slightly risky, only no api) that all lists are on the first page.
 				Defaults to False.
 
 			use_api (bool, optional): Whether to use the api (if present).
-			Defaults to true.
+				Defaults to true.
 
 		Returns:
 			list[str] or dict: A list of pages.
 		
 		Note:
 			API and non-API methods may return different results based on
-			 how recently the category/list page was updated. API mehtod
-			 should be considered correct.
-		Note 2:
+				how recently the category/list page was updated. API mehtod
+				should be considered correct.
+		Note:
 			If recursive and with_subcats the function with return a nested
-			 dictionary.
+				dictionary.
 		"""
 		pages: Union[list[str], dict] = {} if with_subcats else []
 
