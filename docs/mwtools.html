@@ -57,14 +57,14 @@ mwtools    </h1>
 
 <p>A high level library containing set of tools for for filtering pages using the
 rich data available in MediaWikis such as categories and info boxes. Uses both
-web-scraping and API methods (where available and feasible) to gather 
+web-scraping and API methods (where available and feasible) to gather
 information.</p>
 
 <h1 id="basic-usage">Basic Usage</h1>
 
 <p>Create <code>MediaWikiTools</code> object:</p>
 
-<div class="pdoc-code codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">mediawiki</span><span class="o">-</span><span class="n">tools</span> <span class="kn">import</span> <span class="nn">MediaWikiTools</span>
+<div class="pdoc-code codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">mwtools</span> <span class="kn">import</span> <span class="n">MediaWikiTools</span>
 
 <span class="n">hp_wiki</span> <span class="o">=</span> <span class="n">MediaWikiTools</span><span class="p">(</span><span class="s1">&#39;harrypotter.fandom.com&#39;</span><span class="p">)</span>
 <span class="n">hp_wiki</span><span class="o">.</span><span class="n">has_api</span>     <span class="c1"># True</span>
@@ -136,13 +136,13 @@ combination with the <code>with_subcats</code> results in a nested dictionary.</
 
 <p>Get an intersection of 2 or more categories.</p>
 
-<div class="pdoc-code codehilite"><pre><span></span><code><span class="n">hp_wiki</span><span class="o">.</span><span class="n">get_set</span><span class="p">([</span><span class="s1">&#39;1980_births&#39;</span><span class="p">,</span> <span class="s1">&#39;Hogwarts_dropouts&#39;</span><span class="p">],</span> <span class="n">operation</span><span class="o">=</span><span class="s1">&#39;&amp;&#39;</span><span class="p">)</span>
+<div class="pdoc-code codehilite"><pre><span></span><code><span class="n">hp_wiki</span><span class="o">.</span><span class="n">get_set</span><span class="p">([</span><span class="s1">&#39;1980_births&#39;</span><span class="p">,</span> <span class="s1">&#39;Hogwarts_dropouts&#39;</span><span class="p">],</span> <span class="n">operations</span><span class="o">=</span><span class="s1">&#39;&amp;&#39;</span><span class="p">)</span>
 <span class="c1"># [&#39;Harry Potter&#39;, &#39;Ronald Weasley&#39;]</span>
 
-<span class="n">hp_wiki</span><span class="o">.</span><span class="n">get_set</span><span class="p">([</span><span class="s1">&#39;1980_births&#39;</span><span class="p">,</span> 
-                <span class="s1">&#39;Hogwarts_dropouts&#39;</span><span class="p">,</span> 
-                <span class="s1">&#39;Green-eyed_individuals&#39;</span><span class="p">],</span> 
-                <span class="n">operation</span><span class="o">=</span><span class="s1">&#39;intersection&#39;</span><span class="p">)</span>
+<span class="n">hp_wiki</span><span class="o">.</span><span class="n">get_set</span><span class="p">([</span><span class="s1">&#39;1980_births&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;Hogwarts_dropouts&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;Green-eyed_individuals&#39;</span><span class="p">],</span>
+                <span class="n">operations</span><span class="o">=</span><span class="s1">&#39;intersection&#39;</span><span class="p">)</span>
 <span class="c1"># [&#39;Harry Potter&#39;]</span>
 </code></pre></div>
 
@@ -150,8 +150,10 @@ combination with the <code>with_subcats</code> results in a nested dictionary.</
 
 <div class="pdoc-code codehilite"><pre><span></span><code><span class="n">wiki</span> <span class="o">=</span> <span class="n">MediaWikiTools</span><span class="p">(</span><span class="s1">&#39;en.wikipedia.org&#39;</span><span class="p">)</span>
 
-<span class="n">wiki</span><span class="o">.</span><span class="n">get_set</span><span class="p">([</span><span class="s1">&#39;Countries in Asia&#39;</span><span class="p">,</span> <span class="s1">&#39;Countries_in_Europe&#39;</span><span class="p">],</span>
-                   <span class="n">operation</span><span class="o">=</span><span class="s1">&#39;or&#39;</span><span class="p">)</span>
+<span class="c1"># get the union of countries in Europe and Asia and save it</span>
+<span class="n">countries</span> <span class="o">=</span> <span class="n">wiki</span><span class="o">.</span><span class="n">get_set</span><span class="p">([</span><span class="s1">&#39;Countries in Asia&#39;</span><span class="p">,</span> <span class="s1">&#39;Countries_in_Europe&#39;</span><span class="p">],</span>
+                   <span class="n">operations</span><span class="o">=</span><span class="s1">&#39;or&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">countries</span><span class="p">)</span>
 <span class="c1"># [&#39;Cyprus&#39;,</span>
 <span class="c1">#  &#39;Pakistan&#39;,</span>
 <span class="c1">#  &#39;Croatia&#39;,</span>
@@ -163,13 +165,9 @@ combination with the <code>with_subcats</code> results in a nested dictionary.</
 
 <p>Chaining operations.</p>
 
-<div class="pdoc-code codehilite"><pre><span></span><code><span class="c1"># get the union of countries in Europe and Asia and save it</span>
-<span class="n">countries</span> <span class="o">=</span> <span class="n">wiki</span><span class="o">.</span><span class="n">get_set</span><span class="p">([</span><span class="s1">&#39;Countries in Asia&#39;</span><span class="p">,</span> <span class="s1">&#39;Countries_in_Europe&#39;</span><span class="p">],</span>
-                  <span class="n">operation</span><span class="o">=</span><span class="s1">&#39;union&#39;</span><span class="p">)</span>
-<span class="c1"># intersect the saved list with a different category</span>
-<span class="n">wiki</span><span class="o">.</span><span class="n">get_set</span><span class="p">(</span><span class="s1">&#39;Russian-speaking_countries_and_territories&#39;</span><span class="p">,</span> 
-            <span class="n">operation</span><span class="o">=</span><span class="s1">&#39;&amp;&#39;</span><span class="p">,</span> 
-            <span class="n">pages_list</span><span class="o">=</span><span class="n">countries</span><span class="p">)</span>
+<div class="pdoc-code codehilite"><pre><span></span><code><span class="c1"># intersect the saved list with a different category</span>
+<span class="n">wiki</span><span class="o">.</span><span class="n">get_set</span><span class="p">([</span><span class="s1">&#39;Russian-speaking_countries_and_territories&#39;</span><span class="p">,</span> <span class="n">countries</span><span class="p">],</span> 
+             <span class="n">operations</span><span class="o">=</span><span class="s1">&#39;&amp;&#39;</span><span class="p">)</span>
 <span class="c1"># [&#39;Kyrgyzstan&#39;,</span>
 <span class="c1">#  &#39;Moldova&#39;,</span>
 <span class="c1">#  &#39;Russia&#39;,</span>
@@ -181,6 +179,16 @@ combination with the <code>with_subcats</code> results in a nested dictionary.</
 <span class="c1">#  &#39;Mongolia&#39;,</span>
 <span class="c1">#  &#39;Kazakhstan&#39;]</span>
 </code></pre></div>
+
+<p>Without any saved variables. The number of operations must equal the number of
+categories minus one.</p>
+
+<div class="pdoc-code codehilite"><pre><span></span><code><span class="n">wiki</span><span class="o">.</span><span class="n">get_set</span><span class="p">([</span><span class="s1">&#39;Countries in Asia&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;Countries_in_Europe&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;Russian-speaking_countries_and_territories&#39;</span><span class="p">],</span>
+              <span class="n">operations</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;or&#39;</span><span class="p">,</span> <span class="s1">&#39;and&#39;</span><span class="p">])</span>
+<span class="c1"># same as above</span>
+</code></pre></div>
 </div>
 
                         <details>
@@ -191,7 +199,7 @@ combination with the <code>with_subcats</code> results in a nested dictionary.</
 
 <span class="sd">A high level library containing set of tools for for filtering pages using the</span>
 <span class="sd">rich data available in MediaWikis such as categories and info boxes. Uses both</span>
-<span class="sd">web-scraping and API methods (where available and feasible) to gather </span>
+<span class="sd">web-scraping and API methods (where available and feasible) to gather</span>
 <span class="sd">information.</span>
 
 <span class="sd"># Basic Usage</span>
@@ -199,7 +207,7 @@ combination with the <code>with_subcats</code> results in a nested dictionary.</
 <span class="sd">Create `MediaWikiTools` object:</span>
 
 <span class="sd">```python</span>
-<span class="sd">from mediawiki-tools import MediaWikiTools</span>
+<span class="sd">from mwtools import MediaWikiTools</span>
 
 <span class="sd">hp_wiki = MediaWikiTools(&#39;harrypotter.fandom.com&#39;)</span>
 <span class="sd">hp_wiki.has_api     # True</span>
@@ -276,13 +284,13 @@ combination with the <code>with_subcats</code> results in a nested dictionary.</
 <span class="sd">Get an intersection of 2 or more categories.</span>
 
 <span class="sd">```python</span>
-<span class="sd">hp_wiki.get_set([&#39;1980_births&#39;, &#39;Hogwarts_dropouts&#39;], operation=&#39;&amp;&#39;)</span>
+<span class="sd">hp_wiki.get_set([&#39;1980_births&#39;, &#39;Hogwarts_dropouts&#39;], operations=&#39;&amp;&#39;)</span>
 <span class="sd"># [&#39;Harry Potter&#39;, &#39;Ronald Weasley&#39;]</span>
 
-<span class="sd">hp_wiki.get_set([&#39;1980_births&#39;, </span>
-<span class="sd">                &#39;Hogwarts_dropouts&#39;, </span>
-<span class="sd">                &#39;Green-eyed_individuals&#39;], </span>
-<span class="sd">                operation=&#39;intersection&#39;)</span>
+<span class="sd">hp_wiki.get_set([&#39;1980_births&#39;,</span>
+<span class="sd">                &#39;Hogwarts_dropouts&#39;,</span>
+<span class="sd">                &#39;Green-eyed_individuals&#39;],</span>
+<span class="sd">                operations=&#39;intersection&#39;)</span>
 <span class="sd"># [&#39;Harry Potter&#39;]</span>
 <span class="sd">```</span>
 
@@ -291,8 +299,10 @@ combination with the <code>with_subcats</code> results in a nested dictionary.</
 <span class="sd">```python</span>
 <span class="sd">wiki = MediaWikiTools(&#39;en.wikipedia.org&#39;)</span>
 
-<span class="sd">wiki.get_set([&#39;Countries in Asia&#39;, &#39;Countries_in_Europe&#39;],</span>
-<span class="sd">	           operation=&#39;or&#39;)</span>
+<span class="sd"># get the union of countries in Europe and Asia and save it</span>
+<span class="sd">countries = wiki.get_set([&#39;Countries in Asia&#39;, &#39;Countries_in_Europe&#39;],</span>
+<span class="sd">	           operations=&#39;or&#39;)</span>
+<span class="sd">print(countries)</span>
 <span class="sd"># [&#39;Cyprus&#39;,</span>
 <span class="sd">#  &#39;Pakistan&#39;,</span>
 <span class="sd">#  &#39;Croatia&#39;,</span>
@@ -305,13 +315,9 @@ combination with the <code>with_subcats</code> results in a nested dictionary.</
 <span class="sd">Chaining operations.</span>
 
 <span class="sd">```python</span>
-<span class="sd"># get the union of countries in Europe and Asia and save it</span>
-<span class="sd">countries = wiki.get_set([&#39;Countries in Asia&#39;, &#39;Countries_in_Europe&#39;],</span>
-<span class="sd">	          operation=&#39;union&#39;)</span>
 <span class="sd"># intersect the saved list with a different category</span>
-<span class="sd">wiki.get_set(&#39;Russian-speaking_countries_and_territories&#39;, </span>
-<span class="sd">            operation=&#39;&amp;&#39;, </span>
-<span class="sd">            pages_list=countries)</span>
+<span class="sd">wiki.get_set([&#39;Russian-speaking_countries_and_territories&#39;, countries], </span>
+<span class="sd">             operations=&#39;&amp;&#39;)</span>
 <span class="sd"># [&#39;Kyrgyzstan&#39;,</span>
 <span class="sd">#  &#39;Moldova&#39;,</span>
 <span class="sd">#  &#39;Russia&#39;,</span>
@@ -323,6 +329,18 @@ combination with the <code>with_subcats</code> results in a nested dictionary.</
 <span class="sd">#  &#39;Mongolia&#39;,</span>
 <span class="sd">#  &#39;Kazakhstan&#39;]</span>
 <span class="sd">```</span>
+
+<span class="sd">Without any saved variables. The number of operations must equal the number of</span>
+<span class="sd">categories minus one.</span>
+
+<span class="sd">```python</span>
+<span class="sd">wiki.get_set([&#39;Countries in Asia&#39;,</span>
+<span class="sd">              &#39;Countries_in_Europe&#39;,</span>
+<span class="sd">              &#39;Russian-speaking_countries_and_territories&#39;],</span>
+<span class="sd">              operations=[&#39;or&#39;, &#39;and&#39;])</span>
+<span class="sd"># same as above</span>
+<span class="sd">```</span>
+
 <span class="sd">&quot;&quot;&quot;</span>
 </pre></div>
 

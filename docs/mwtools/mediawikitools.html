@@ -455,20 +455,24 @@
 		<span class="k">return</span> <span class="n">pages</span>
 
 	<span class="k">def</span> <span class="nf">get_set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-	            <span class="n">categories</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">],</span>
-	            <span class="n">operation</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-	            <span class="n">pages_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[],</span>
+	            <span class="n">categories</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
+	            <span class="n">operations</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">],</span>
+	            <span class="n">pages_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 	            <span class="n">get_subcats</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 	            <span class="n">use_api</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 		<span class="sd">&quot;&quot;&quot;Get a subset (or superset) of pages.</span>
 
 <span class="sd">		Args:</span>
-<span class="sd">				categories (Union[list[str], str]): String or list (str) of category names</span>
+<span class="sd">				categories (Union[list, str]): String or list of category names (or lists)</span>
 <span class="sd">					operation (str): Intersection (&#39;intersection&#39;, &#39;i&#39;, &#39;and&#39;, &#39;&amp;&#39;) or union</span>
 <span class="sd">					(&#39;union&#39;, &#39;u&#39;, &#39;or&#39;, &#39;|&#39;)</span>
+<span class="sd">				</span>
+<span class="sd">				operations (Union[list[str], str]): A single operation or</span>
+<span class="sd">					`len(categories)-1` operations to apply to categories</span>
 
 <span class="sd">				pages_list (list[str], optional): List of page to merge with queried ones</span>
-<span class="sd">					using selected operation. Defaults to [].</span>
+<span class="sd">					using selected operation. Always last in order of operations. Defaults</span>
+<span class="sd">					to None. (Obsolete)</span>
 
 <span class="sd">				get_subcats (bool, optional): Get pages first level subcategories. Defaults</span>
 <span class="sd">					to False.</span>
@@ -477,6 +481,10 @@
 
 <span class="sd">		Returns:</span>
 <span class="sd">				list[str]: List of pages resulting from the operations requested.</span>
+
+<span class="sd">		Note:</span>
+<span class="sd">			Set difference is not commutative. `categories` defines the order</span>
+<span class="sd">				of operations</span>
 <span class="sd">		&quot;&quot;&quot;</span>
 		<span class="n">operation_dict</span> <span class="o">=</span> <span class="p">{</span>
 		    <span class="s1">&#39;intersection&#39;</span><span class="p">:</span> <span class="s1">&#39;intersection_update&#39;</span><span class="p">,</span>
@@ -486,15 +494,32 @@
 		    <span class="s1">&#39;union&#39;</span><span class="p">:</span> <span class="s1">&#39;update&#39;</span><span class="p">,</span>
 		    <span class="s1">&#39;u&#39;</span><span class="p">:</span> <span class="s1">&#39;update&#39;</span><span class="p">,</span>
 		    <span class="s1">&#39;or&#39;</span><span class="p">:</span> <span class="s1">&#39;update&#39;</span><span class="p">,</span>
-		    <span class="s1">&#39;|&#39;</span><span class="p">:</span> <span class="s1">&#39;update&#39;</span>
+		    <span class="s1">&#39;|&#39;</span><span class="p">:</span> <span class="s1">&#39;update&#39;</span><span class="p">,</span>
+		    <span class="s1">&#39;not&#39;</span><span class="p">:</span> <span class="s1">&#39;difference_update&#39;</span><span class="p">,</span>
+		    <span class="s1">&#39;difference&#39;</span><span class="p">:</span> <span class="s1">&#39;difference_update&#39;</span>
 		<span class="p">}</span>
 
-		<span class="k">if</span> <span class="n">operation</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">operation_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-			<span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid operation: </span><span class="si">{</span><span class="n">operation</span><span class="si">}</span><span class="s2"> </span><span class="se">\</span>
+		<span class="n">page_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+		<span class="c1"># check if all the operations are valid</span>
+		<span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span>
+		    <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">operation_dict</span><span class="p">,</span>
+		        <span class="n">operations</span> <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">operations</span><span class="p">)</span> <span class="o">==</span> <span class="nb">list</span> <span class="k">else</span> <span class="p">[</span><span class="n">operations</span><span class="p">])):</span>
+			<span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid operation: </span><span class="si">{</span><span class="n">operations</span><span class="si">}</span><span class="s2"> </span><span class="se">\</span>
 <span class="s2">				chose from following: </span><span class="se">\n\t</span><span class="si">{</span><span class="n">operation_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-		<span class="n">page_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
-		<span class="n">operator</span> <span class="o">=</span> <span class="n">operation_dict</span><span class="p">[</span><span class="n">operation</span><span class="p">]</span>
+		<span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">operations</span><span class="p">)</span> <span class="o">==</span> <span class="nb">list</span><span class="p">:</span>
+			<span class="c1"># the first operation is always a union</span>
+			<span class="n">operations</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;u&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">operations</span>
+			<span class="c1"># check that the number of inputs equals the number of operations</span>
+			<span class="k">assert</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">categories</span><span class="p">)</span> <span class="o">+</span> <span class="nb">bool</span><span class="p">(</span><span class="n">pages_list</span><span class="p">))</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">operations</span><span class="p">)</span>
+			<span class="n">operators</span> <span class="o">=</span> <span class="p">[]</span>
+			<span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">operations</span><span class="p">:</span>
+				<span class="n">operators</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">operation_dict</span><span class="p">[</span><span class="n">o</span><span class="p">])</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="n">operators</span> <span class="o">=</span> <span class="p">[</span><span class="n">operation_dict</span><span class="p">[</span><span class="n">operations</span><span class="p">]</span>
+			             <span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">categories</span><span class="p">)</span> <span class="o">+</span> <span class="nb">bool</span><span class="p">(</span><span class="n">pages_list</span><span class="p">))</span>
+			<span class="n">operators</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;update&#39;</span>
 
 		<span class="c1"># edge cases</span>
 		<span class="k">if</span> <span class="ow">not</span> <span class="n">categories</span><span class="p">:</span>
@@ -504,17 +529,13 @@
 		<span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">categories</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">:</span>
 			<span class="n">page_set</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_pages</span><span class="p">(</span><span class="n">categories</span><span class="p">,</span> <span class="n">use_api</span><span class="o">=</span><span class="n">use_api</span><span class="p">))</span>
 		<span class="k">else</span><span class="p">:</span>
-			<span class="k">for</span> <span class="n">category</span> <span class="ow">in</span> <span class="n">categories</span><span class="p">:</span>
-				<span class="k">if</span> <span class="ow">not</span> <span class="n">page_set</span><span class="p">:</span>
-					<span class="n">page_set</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-					    <span class="bp">self</span><span class="o">.</span><span class="n">get_pages</span><span class="p">(</span><span class="n">category</span><span class="p">,</span> <span class="n">get_subcats</span><span class="p">,</span> <span class="n">use_api</span><span class="o">=</span><span class="n">use_api</span><span class="p">))</span>
-					<span class="k">continue</span>
-				<span class="nb">getattr</span><span class="p">(</span><span class="n">page_set</span><span class="p">,</span> <span class="n">operator</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_pages</span><span class="p">(</span><span class="n">category</span><span class="p">,</span>
-				                                           <span class="n">get_subcats</span><span class="p">,</span>
-				                                           <span class="n">use_api</span><span class="o">=</span><span class="n">use_api</span><span class="p">))</span>
+			<span class="k">for</span> <span class="n">category</span><span class="p">,</span> <span class="n">operator</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">categories</span><span class="p">,</span> <span class="n">operators</span><span class="p">):</span>
+				<span class="nb">getattr</span><span class="p">(</span><span class="n">page_set</span><span class="p">,</span> <span class="n">operator</span><span class="p">)(</span>
+				    <span class="n">category</span> <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">category</span><span class="p">)</span> <span class="o">==</span> <span class="nb">list</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span>
+				    <span class="n">get_pages</span><span class="p">(</span><span class="n">category</span><span class="p">,</span> <span class="n">get_subcats</span><span class="p">,</span> <span class="n">use_api</span><span class="o">=</span><span class="n">use_api</span><span class="p">))</span>
 
 		<span class="k">if</span> <span class="n">pages_list</span><span class="p">:</span>
-			<span class="nb">getattr</span><span class="p">(</span><span class="n">page_set</span><span class="p">,</span> <span class="n">operator</span><span class="p">)(</span><span class="n">pages_list</span><span class="p">)</span>
+			<span class="nb">getattr</span><span class="p">(</span><span class="n">page_set</span><span class="p">,</span> <span class="n">operators</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])(</span><span class="n">pages_list</span><span class="p">)</span>
 
 		<span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">page_set</span><span class="p">)</span>
 
@@ -920,20 +941,24 @@
 		<span class="k">return</span> <span class="n">pages</span>
 
 	<span class="k">def</span> <span class="nf">get_set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-	            <span class="n">categories</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">],</span>
-	            <span class="n">operation</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-	            <span class="n">pages_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[],</span>
+	            <span class="n">categories</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
+	            <span class="n">operations</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">],</span>
+	            <span class="n">pages_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 	            <span class="n">get_subcats</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 	            <span class="n">use_api</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 		<span class="sd">&quot;&quot;&quot;Get a subset (or superset) of pages.</span>
 
 <span class="sd">		Args:</span>
-<span class="sd">				categories (Union[list[str], str]): String or list (str) of category names</span>
+<span class="sd">				categories (Union[list, str]): String or list of category names (or lists)</span>
 <span class="sd">					operation (str): Intersection (&#39;intersection&#39;, &#39;i&#39;, &#39;and&#39;, &#39;&amp;&#39;) or union</span>
 <span class="sd">					(&#39;union&#39;, &#39;u&#39;, &#39;or&#39;, &#39;|&#39;)</span>
+<span class="sd">				</span>
+<span class="sd">				operations (Union[list[str], str]): A single operation or</span>
+<span class="sd">					`len(categories)-1` operations to apply to categories</span>
 
 <span class="sd">				pages_list (list[str], optional): List of page to merge with queried ones</span>
-<span class="sd">					using selected operation. Defaults to [].</span>
+<span class="sd">					using selected operation. Always last in order of operations. Defaults</span>
+<span class="sd">					to None. (Obsolete)</span>
 
 <span class="sd">				get_subcats (bool, optional): Get pages first level subcategories. Defaults</span>
 <span class="sd">					to False.</span>
@@ -942,6 +967,10 @@
 
 <span class="sd">		Returns:</span>
 <span class="sd">				list[str]: List of pages resulting from the operations requested.</span>
+
+<span class="sd">		Note:</span>
+<span class="sd">			Set difference is not commutative. `categories` defines the order</span>
+<span class="sd">				of operations</span>
 <span class="sd">		&quot;&quot;&quot;</span>
 		<span class="n">operation_dict</span> <span class="o">=</span> <span class="p">{</span>
 		    <span class="s1">&#39;intersection&#39;</span><span class="p">:</span> <span class="s1">&#39;intersection_update&#39;</span><span class="p">,</span>
@@ -951,15 +980,32 @@
 		    <span class="s1">&#39;union&#39;</span><span class="p">:</span> <span class="s1">&#39;update&#39;</span><span class="p">,</span>
 		    <span class="s1">&#39;u&#39;</span><span class="p">:</span> <span class="s1">&#39;update&#39;</span><span class="p">,</span>
 		    <span class="s1">&#39;or&#39;</span><span class="p">:</span> <span class="s1">&#39;update&#39;</span><span class="p">,</span>
-		    <span class="s1">&#39;|&#39;</span><span class="p">:</span> <span class="s1">&#39;update&#39;</span>
+		    <span class="s1">&#39;|&#39;</span><span class="p">:</span> <span class="s1">&#39;update&#39;</span><span class="p">,</span>
+		    <span class="s1">&#39;not&#39;</span><span class="p">:</span> <span class="s1">&#39;difference_update&#39;</span><span class="p">,</span>
+		    <span class="s1">&#39;difference&#39;</span><span class="p">:</span> <span class="s1">&#39;difference_update&#39;</span>
 		<span class="p">}</span>
 
-		<span class="k">if</span> <span class="n">operation</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">operation_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-			<span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid operation: </span><span class="si">{</span><span class="n">operation</span><span class="si">}</span><span class="s2"> </span><span class="se">\</span>
+		<span class="n">page_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+		<span class="c1"># check if all the operations are valid</span>
+		<span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span>
+		    <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">operation_dict</span><span class="p">,</span>
+		        <span class="n">operations</span> <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">operations</span><span class="p">)</span> <span class="o">==</span> <span class="nb">list</span> <span class="k">else</span> <span class="p">[</span><span class="n">operations</span><span class="p">])):</span>
+			<span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid operation: </span><span class="si">{</span><span class="n">operations</span><span class="si">}</span><span class="s2"> </span><span class="se">\</span>
 <span class="s2">				chose from following: </span><span class="se">\n\t</span><span class="si">{</span><span class="n">operation_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-		<span class="n">page_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
-		<span class="n">operator</span> <span class="o">=</span> <span class="n">operation_dict</span><span class="p">[</span><span class="n">operation</span><span class="p">]</span>
+		<span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">operations</span><span class="p">)</span> <span class="o">==</span> <span class="nb">list</span><span class="p">:</span>
+			<span class="c1"># the first operation is always a union</span>
+			<span class="n">operations</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;u&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">operations</span>
+			<span class="c1"># check that the number of inputs equals the number of operations</span>
+			<span class="k">assert</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">categories</span><span class="p">)</span> <span class="o">+</span> <span class="nb">bool</span><span class="p">(</span><span class="n">pages_list</span><span class="p">))</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">operations</span><span class="p">)</span>
+			<span class="n">operators</span> <span class="o">=</span> <span class="p">[]</span>
+			<span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">operations</span><span class="p">:</span>
+				<span class="n">operators</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">operation_dict</span><span class="p">[</span><span class="n">o</span><span class="p">])</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="n">operators</span> <span class="o">=</span> <span class="p">[</span><span class="n">operation_dict</span><span class="p">[</span><span class="n">operations</span><span class="p">]</span>
+			             <span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">categories</span><span class="p">)</span> <span class="o">+</span> <span class="nb">bool</span><span class="p">(</span><span class="n">pages_list</span><span class="p">))</span>
+			<span class="n">operators</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;update&#39;</span>
 
 		<span class="c1"># edge cases</span>
 		<span class="k">if</span> <span class="ow">not</span> <span class="n">categories</span><span class="p">:</span>
@@ -969,17 +1015,13 @@
 		<span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">categories</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">:</span>
 			<span class="n">page_set</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_pages</span><span class="p">(</span><span class="n">categories</span><span class="p">,</span> <span class="n">use_api</span><span class="o">=</span><span class="n">use_api</span><span class="p">))</span>
 		<span class="k">else</span><span class="p">:</span>
-			<span class="k">for</span> <span class="n">category</span> <span class="ow">in</span> <span class="n">categories</span><span class="p">:</span>
-				<span class="k">if</span> <span class="ow">not</span> <span class="n">page_set</span><span class="p">:</span>
-					<span class="n">page_set</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-					    <span class="bp">self</span><span class="o">.</span><span class="n">get_pages</span><span class="p">(</span><span class="n">category</span><span class="p">,</span> <span class="n">get_subcats</span><span class="p">,</span> <span class="n">use_api</span><span class="o">=</span><span class="n">use_api</span><span class="p">))</span>
-					<span class="k">continue</span>
-				<span class="nb">getattr</span><span class="p">(</span><span class="n">page_set</span><span class="p">,</span> <span class="n">operator</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_pages</span><span class="p">(</span><span class="n">category</span><span class="p">,</span>
-				                                           <span class="n">get_subcats</span><span class="p">,</span>
-				                                           <span class="n">use_api</span><span class="o">=</span><span class="n">use_api</span><span class="p">))</span>
+			<span class="k">for</span> <span class="n">category</span><span class="p">,</span> <span class="n">operator</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">categories</span><span class="p">,</span> <span class="n">operators</span><span class="p">):</span>
+				<span class="nb">getattr</span><span class="p">(</span><span class="n">page_set</span><span class="p">,</span> <span class="n">operator</span><span class="p">)(</span>
+				    <span class="n">category</span> <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">category</span><span class="p">)</span> <span class="o">==</span> <span class="nb">list</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span>
+				    <span class="n">get_pages</span><span class="p">(</span><span class="n">category</span><span class="p">,</span> <span class="n">get_subcats</span><span class="p">,</span> <span class="n">use_api</span><span class="o">=</span><span class="n">use_api</span><span class="p">))</span>
 
 		<span class="k">if</span> <span class="n">pages_list</span><span class="p">:</span>
-			<span class="nb">getattr</span><span class="p">(</span><span class="n">page_set</span><span class="p">,</span> <span class="n">operator</span><span class="p">)(</span><span class="n">pages_list</span><span class="p">)</span>
+			<span class="nb">getattr</span><span class="p">(</span><span class="n">page_set</span><span class="p">,</span> <span class="n">operators</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])(</span><span class="n">pages_list</span><span class="p">)</span>
 
 		<span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">page_set</span><span class="p">)</span>
 
@@ -1469,9 +1511,9 @@ Defaults to true.</li>
             <span class="def">def</span>
             <span class="name">get_set</span><span class="signature">(
     self,
-    categories: Union[list[str], str],
-    operation: str,
-    pages_list: list[str] = [],
+    categories: Union[list, str],
+    operations: Union[list[str], str],
+    pages_list: list[str] = None,
     get_subcats: bool = False,
     use_api: bool = True
 ) -&gt; list[str]</span>:
@@ -1480,20 +1522,24 @@ Defaults to true.</li>
             <details>
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span>	<span class="k">def</span> <span class="nf">get_set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-	            <span class="n">categories</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">],</span>
-	            <span class="n">operation</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-	            <span class="n">pages_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[],</span>
+	            <span class="n">categories</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
+	            <span class="n">operations</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">],</span>
+	            <span class="n">pages_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 	            <span class="n">get_subcats</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 	            <span class="n">use_api</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 		<span class="sd">&quot;&quot;&quot;Get a subset (or superset) of pages.</span>
 
 <span class="sd">		Args:</span>
-<span class="sd">				categories (Union[list[str], str]): String or list (str) of category names</span>
+<span class="sd">				categories (Union[list, str]): String or list of category names (or lists)</span>
 <span class="sd">					operation (str): Intersection (&#39;intersection&#39;, &#39;i&#39;, &#39;and&#39;, &#39;&amp;&#39;) or union</span>
 <span class="sd">					(&#39;union&#39;, &#39;u&#39;, &#39;or&#39;, &#39;|&#39;)</span>
+<span class="sd">				</span>
+<span class="sd">				operations (Union[list[str], str]): A single operation or</span>
+<span class="sd">					`len(categories)-1` operations to apply to categories</span>
 
 <span class="sd">				pages_list (list[str], optional): List of page to merge with queried ones</span>
-<span class="sd">					using selected operation. Defaults to [].</span>
+<span class="sd">					using selected operation. Always last in order of operations. Defaults</span>
+<span class="sd">					to None. (Obsolete)</span>
 
 <span class="sd">				get_subcats (bool, optional): Get pages first level subcategories. Defaults</span>
 <span class="sd">					to False.</span>
@@ -1502,6 +1548,10 @@ Defaults to true.</li>
 
 <span class="sd">		Returns:</span>
 <span class="sd">				list[str]: List of pages resulting from the operations requested.</span>
+
+<span class="sd">		Note:</span>
+<span class="sd">			Set difference is not commutative. `categories` defines the order</span>
+<span class="sd">				of operations</span>
 <span class="sd">		&quot;&quot;&quot;</span>
 		<span class="n">operation_dict</span> <span class="o">=</span> <span class="p">{</span>
 		    <span class="s1">&#39;intersection&#39;</span><span class="p">:</span> <span class="s1">&#39;intersection_update&#39;</span><span class="p">,</span>
@@ -1511,15 +1561,32 @@ Defaults to true.</li>
 		    <span class="s1">&#39;union&#39;</span><span class="p">:</span> <span class="s1">&#39;update&#39;</span><span class="p">,</span>
 		    <span class="s1">&#39;u&#39;</span><span class="p">:</span> <span class="s1">&#39;update&#39;</span><span class="p">,</span>
 		    <span class="s1">&#39;or&#39;</span><span class="p">:</span> <span class="s1">&#39;update&#39;</span><span class="p">,</span>
-		    <span class="s1">&#39;|&#39;</span><span class="p">:</span> <span class="s1">&#39;update&#39;</span>
+		    <span class="s1">&#39;|&#39;</span><span class="p">:</span> <span class="s1">&#39;update&#39;</span><span class="p">,</span>
+		    <span class="s1">&#39;not&#39;</span><span class="p">:</span> <span class="s1">&#39;difference_update&#39;</span><span class="p">,</span>
+		    <span class="s1">&#39;difference&#39;</span><span class="p">:</span> <span class="s1">&#39;difference_update&#39;</span>
 		<span class="p">}</span>
 
-		<span class="k">if</span> <span class="n">operation</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">operation_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-			<span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid operation: </span><span class="si">{</span><span class="n">operation</span><span class="si">}</span><span class="s2"> </span><span class="se">\</span>
+		<span class="n">page_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+		<span class="c1"># check if all the operations are valid</span>
+		<span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span>
+		    <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">operation_dict</span><span class="p">,</span>
+		        <span class="n">operations</span> <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">operations</span><span class="p">)</span> <span class="o">==</span> <span class="nb">list</span> <span class="k">else</span> <span class="p">[</span><span class="n">operations</span><span class="p">])):</span>
+			<span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid operation: </span><span class="si">{</span><span class="n">operations</span><span class="si">}</span><span class="s2"> </span><span class="se">\</span>
 <span class="s2">				chose from following: </span><span class="se">\n\t</span><span class="si">{</span><span class="n">operation_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-		<span class="n">page_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
-		<span class="n">operator</span> <span class="o">=</span> <span class="n">operation_dict</span><span class="p">[</span><span class="n">operation</span><span class="p">]</span>
+		<span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">operations</span><span class="p">)</span> <span class="o">==</span> <span class="nb">list</span><span class="p">:</span>
+			<span class="c1"># the first operation is always a union</span>
+			<span class="n">operations</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;u&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">operations</span>
+			<span class="c1"># check that the number of inputs equals the number of operations</span>
+			<span class="k">assert</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">categories</span><span class="p">)</span> <span class="o">+</span> <span class="nb">bool</span><span class="p">(</span><span class="n">pages_list</span><span class="p">))</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">operations</span><span class="p">)</span>
+			<span class="n">operators</span> <span class="o">=</span> <span class="p">[]</span>
+			<span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">operations</span><span class="p">:</span>
+				<span class="n">operators</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">operation_dict</span><span class="p">[</span><span class="n">o</span><span class="p">])</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="n">operators</span> <span class="o">=</span> <span class="p">[</span><span class="n">operation_dict</span><span class="p">[</span><span class="n">operations</span><span class="p">]</span>
+			             <span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">categories</span><span class="p">)</span> <span class="o">+</span> <span class="nb">bool</span><span class="p">(</span><span class="n">pages_list</span><span class="p">))</span>
+			<span class="n">operators</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;update&#39;</span>
 
 		<span class="c1"># edge cases</span>
 		<span class="k">if</span> <span class="ow">not</span> <span class="n">categories</span><span class="p">:</span>
@@ -1529,17 +1596,13 @@ Defaults to true.</li>
 		<span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">categories</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">:</span>
 			<span class="n">page_set</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_pages</span><span class="p">(</span><span class="n">categories</span><span class="p">,</span> <span class="n">use_api</span><span class="o">=</span><span class="n">use_api</span><span class="p">))</span>
 		<span class="k">else</span><span class="p">:</span>
-			<span class="k">for</span> <span class="n">category</span> <span class="ow">in</span> <span class="n">categories</span><span class="p">:</span>
-				<span class="k">if</span> <span class="ow">not</span> <span class="n">page_set</span><span class="p">:</span>
-					<span class="n">page_set</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-					    <span class="bp">self</span><span class="o">.</span><span class="n">get_pages</span><span class="p">(</span><span class="n">category</span><span class="p">,</span> <span class="n">get_subcats</span><span class="p">,</span> <span class="n">use_api</span><span class="o">=</span><span class="n">use_api</span><span class="p">))</span>
-					<span class="k">continue</span>
-				<span class="nb">getattr</span><span class="p">(</span><span class="n">page_set</span><span class="p">,</span> <span class="n">operator</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_pages</span><span class="p">(</span><span class="n">category</span><span class="p">,</span>
-				                                           <span class="n">get_subcats</span><span class="p">,</span>
-				                                           <span class="n">use_api</span><span class="o">=</span><span class="n">use_api</span><span class="p">))</span>
+			<span class="k">for</span> <span class="n">category</span><span class="p">,</span> <span class="n">operator</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">categories</span><span class="p">,</span> <span class="n">operators</span><span class="p">):</span>
+				<span class="nb">getattr</span><span class="p">(</span><span class="n">page_set</span><span class="p">,</span> <span class="n">operator</span><span class="p">)(</span>
+				    <span class="n">category</span> <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">category</span><span class="p">)</span> <span class="o">==</span> <span class="nb">list</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span>
+				    <span class="n">get_pages</span><span class="p">(</span><span class="n">category</span><span class="p">,</span> <span class="n">get_subcats</span><span class="p">,</span> <span class="n">use_api</span><span class="o">=</span><span class="n">use_api</span><span class="p">))</span>
 
 		<span class="k">if</span> <span class="n">pages_list</span><span class="p">:</span>
-			<span class="nb">getattr</span><span class="p">(</span><span class="n">page_set</span><span class="p">,</span> <span class="n">operator</span><span class="p">)(</span><span class="n">pages_list</span><span class="p">)</span>
+			<span class="nb">getattr</span><span class="p">(</span><span class="n">page_set</span><span class="p">,</span> <span class="n">operators</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])(</span><span class="n">pages_list</span><span class="p">)</span>
 
 		<span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">page_set</span><span class="p">)</span>
 </pre></div>
@@ -1551,11 +1614,14 @@ Defaults to true.</li>
 <h6 id="args">Args</h6>
 
 <ul>
-<li><strong>categories (Union[list[str], str]):</strong>  String or list (str) of category names
+<li><strong>categories (Union[list, str]):</strong>  String or list of category names (or lists)
 operation (str): Intersection ('intersection', 'i', 'and', '&amp;') or union
 ('union', 'u', 'or', '|')</li>
+<li><strong>operations (Union[list[str], str]):</strong>  A single operation or
+<code>len(categories)-1</code> operations to apply to categories</li>
 <li><strong>pages_list (list[str], optional):</strong>  List of page to merge with queried ones
-using selected operation. Defaults to [].</li>
+using selected operation. Always last in order of operations. Defaults
+to None. (Obsolete)</li>
 <li><strong>get_subcats (bool, optional):</strong>  Get pages first level subcategories. Defaults
 to False.</li>
 <li><strong>use_api (bool, optional):</strong>  Use the MediaWiki API if available. Defaults to
@@ -1566,6 +1632,13 @@ True.</li>
 
 <blockquote>
   <p>list[str]: List of pages resulting from the operations requested.</p>
+</blockquote>
+
+<h6 id="note">Note</h6>
+
+<blockquote>
+  <p>Set difference is not commutative. <code>categories</code> defines the order
+          of operations</p>
 </blockquote>
 </div>
 

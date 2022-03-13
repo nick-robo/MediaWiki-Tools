@@ -4,7 +4,7 @@
 
 A high level library containing set of tools for for filtering pages using the
 rich data available in MediaWikis such as categories and info boxes. Uses both
-web-scraping and API methods (where available and feasible) to gather 
+web-scraping and API methods (where available and feasible) to gather
 information.
 
 # Basic Usage
@@ -89,13 +89,13 @@ wiki.get_pages("Art_collectors_by_nationality",
 Get an intersection of 2 or more categories.
 
 ```python
-hp_wiki.get_set(['1980_births', 'Hogwarts_dropouts'], operation='&')
+hp_wiki.get_set(['1980_births', 'Hogwarts_dropouts'], operations='&')
 # ['Harry Potter', 'Ronald Weasley']
 
-hp_wiki.get_set(['1980_births', 
-                'Hogwarts_dropouts', 
-                'Green-eyed_individuals'], 
-                operation='intersection')
+hp_wiki.get_set(['1980_births',
+                'Hogwarts_dropouts',
+                'Green-eyed_individuals'],
+                operations='intersection')
 # ['Harry Potter']
 ```
 
@@ -104,8 +104,10 @@ Get a union of 2 or more categories.
 ```python
 wiki = MediaWikiTools('en.wikipedia.org')
 
-wiki.get_set(['Countries in Asia', 'Countries_in_Europe'],
-	           operation='or')
+# get the union of countries in Europe and Asia and save it
+countries = wiki.get_set(['Countries in Asia', 'Countries_in_Europe'],
+	           operations='or')
+print(countries)
 # ['Cyprus',
 #  'Pakistan',
 #  'Croatia',
@@ -118,13 +120,9 @@ wiki.get_set(['Countries in Asia', 'Countries_in_Europe'],
 Chaining operations.
 
 ```python
-# get the union of countries in Europe and Asia and save it
-countries = wiki.get_set(['Countries in Asia', 'Countries_in_Europe'],
-	          operation='union')
 # intersect the saved list with a different category
-wiki.get_set('Russian-speaking_countries_and_territories', 
-            operation='&', 
-            pages_list=countries)
+wiki.get_set(['Russian-speaking_countries_and_territories', countries], 
+             operations='&')
 # ['Kyrgyzstan',
 #  'Moldova',
 #  'Russia',
@@ -136,4 +134,16 @@ wiki.get_set('Russian-speaking_countries_and_territories',
 #  'Mongolia',
 #  'Kazakhstan']
 ```
+
+Without any saved variables. The number of operations must equal the number of
+categories minus one.
+
+```python
+wiki.get_set(['Countries in Asia',
+              'Countries_in_Europe',
+              'Russian-speaking_countries_and_territories'],
+              operations=['or', 'and'])
+# same as above
+```
+
 """
