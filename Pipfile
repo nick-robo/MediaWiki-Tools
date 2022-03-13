@@ -16,14 +16,13 @@ pypi_push = "twine upload dist/*"
 [packages]
 beautifulsoup4 = "*"
 requests = "*"
-mwparserfromhell = "*"
 pymediawiki = "*"
-deepdiff = "*"
 
 [dev-packages]
 ipython = "*"
 ipykernel = "*"
 flake8 = "*"
+deepdiff = "*"
 pytest = "*"
 flake8-tabs = "*"
 yapf = "*"
