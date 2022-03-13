@@ -444,7 +444,7 @@ class MediaWikiTools:
 				operators.append(operation_dict[o])
 		else:
 			operators = [operation_dict[operations]
-			             ] * (len(categories) - 1 + bool(pages_list))
+			             ] * (len(categories) + bool(pages_list))
 			operators[0] = 'update'
 
 		# edge cases
