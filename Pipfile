@@ -10,6 +10,8 @@ name = "testpypi"
 
 [scripts]
 make_docs = "pdoc mwtools/ -d google -o docs/"
+build_package = "python3 -m build"
+pypi_push = "twine upload dist/*"
 
 [packages]
 beautifulsoup4 = "*"
