@@ -9,7 +9,7 @@ verify_ssl = true
 name = "testpypi"
 
 [scripts]
-make_docs = pdoc src/ -d google -o docs/
+make_docs = "pdoc mwtools/ -d google -o docs/"
 
 [packages]
 beautifulsoup4 = "*"
