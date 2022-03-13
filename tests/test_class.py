@@ -1,5 +1,5 @@
 """Test module for MediaWikiTools class."""
-from src.mediawikitools import MediaWikiTools
+from mwtools.mediawikitools import MediaWikiTools
 import pytest
 import requests
 from deepdiff import DeepDiff
