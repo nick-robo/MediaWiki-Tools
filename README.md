@@ -26,3 +26,57 @@ Requires python `>3.8` because I like the walrus operator.
 # Usage
 
 Check out the [basic usage](https://nick-robo.github.io/MediaWiki-Tools/mwtools.html) guide and detailed [API documentation](https://nick-robo.github.io/MediaWiki-Tools/mwtools/mediawikitools.html).
+
+# Example
+
+Question: Which countries in Asia use english as spoken Language?
+
+Answer:
+```python
+import mwtools
+
+wiki = MediaWikiTools('en.wikipedia.org')
+
+wiki.get_set(['Countries in Asia', 
+              'English-speaking countries and territories'], 
+             'and')
+# ['Philippines', 'Pakistan', 'Bahrain', 'Singapore', 'Brunei', 'India']
+```
+
+Question: Which countries in Asia or Europe use english as spoken Language?
+
+Answer:
+```python
+eurasia = wiki.get_set(['Countries in Asia', 
+                        'Countries in Europe'], 
+                       'or')
+
+wiki.get_set(['English-speaking countries and territories'], 
+             'and', 
+             pages_list=eurasia)
+
+# ['Malta',
+#  'Republic of Ireland',
+#  'Philippines',
+#  'Pakistan',
+#  'United Kingdom',
+#  'Scotland',
+#  'Bahrain',
+#  'Singapore',
+#  'Brunei',
+#  'India']
+```
+
+Question: Which of these countries are not island nations?
+
+Answer:
+```python
+island_countries = wiki.get_pages('Island countries')
+eurasia_en = wiki.get_set(['English-speaking countries and territories'], 
+                          'and', 
+                          pages_list=eurasia)
+# set difference is not currently implemented because it is not commutative.
+set(eurasia_en).difference(island_countries)
+# {'India', 'Pakistan'}
+```
+

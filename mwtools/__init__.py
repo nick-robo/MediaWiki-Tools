@@ -12,7 +12,7 @@ information.
 Create `MediaWikiTools` object:
 
 ```python
-from mediawiki-tools import MediaWikiTools
+from mwtools import MediaWikiTools
 
 hp_wiki = MediaWikiTools('harrypotter.fandom.com')
 hp_wiki.has_api     # True
