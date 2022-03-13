@@ -21,6 +21,16 @@
             <input type="search" placeholder="Search..." role="searchbox" aria-label="search"
                    pattern=".+" required>
 
+        <h2>Contents</h2>
+        <ul>
+  <li><a href="#mediawiki-tools">MediaWiki Tools</a></li>
+  <li><a href="#basic-usage">Basic Usage</a>
+  <ul>
+    <li><a href="#getting-pages">Getting pages</a></li>
+    <li><a href="#getting-sets">Getting sets</a></li>
+  </ul></li>
+</ul>
+
 
         <h2>Submodules</h2>
         <ul>
@@ -41,12 +51,279 @@
                     <h1 class="modulename">
 mwtools    </h1>
 
-                        <div class="docstring"><p>MediaWiki Tools module. Contains all the code for this package.</p>
+                        <div class="docstring"><p>MediaWikiTools class module.</p>
+
+<h1 id="mediawiki-tools">MediaWiki Tools</h1>
+
+<p>A high level library containing set of tools for for filtering pages using the
+rich data available in MediaWikis such as categories and info boxes. Uses both
+web-scraping and API methods (where available and feasible) to gather 
+information.</p>
+
+<h1 id="basic-usage">Basic Usage</h1>
+
+<p>Create <code>MediaWikiTools</code> object:</p>
+
+<div class="pdoc-code codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">mediawiki</span><span class="o">-</span><span class="n">tools</span> <span class="kn">import</span> <span class="nn">MediaWikiTools</span>
+
+<span class="n">hp_wiki</span> <span class="o">=</span> <span class="n">MediaWikiTools</span><span class="p">(</span><span class="s1">&#39;harrypotter.fandom.com&#39;</span><span class="p">)</span>
+<span class="n">hp_wiki</span><span class="o">.</span><span class="n">has_api</span>     <span class="c1"># True</span>
+</code></pre></div>
+
+<h2 id="getting-pages">Getting pages</h2>
+
+<p>Get page names from a category.</p>
+
+<div class="pdoc-code codehilite"><pre><span></span><code><span class="n">hp_wiki</span><span class="o">.</span><span class="n">get_pages</span><span class="p">(</span><span class="s1">&#39;1980_births&#39;</span><span class="p">)</span>
+
+<span class="c1">#  [&#39;Dudley Dursley&#39;,</span>
+<span class="c1">#  &#39;Neville Longbottom&#39;,</span>
+<span class="c1">#  &#39;Ernest Macmillan&#39;,</span>
+<span class="c1">#  &#39;Draco Malfoy&#39;,</span>
+<span class="c1">#  &#39;Harry Potter&#39;,</span>
+<span class="c1">#  &#39;Ronald Weasley&#39;]</span>
+</code></pre></div>
+
+<p>Get pages from subcategories too.</p>
+
+<div class="pdoc-code codehilite"><pre><span></span><code><span class="n">wiki</span> <span class="o">=</span> <span class="n">MediaWikiTools</span><span class="p">(</span><span class="s1">&#39;en.wikipedia.org&#39;</span><span class="p">)</span>
+
+<span class="c1"># get pages from category that contains only subcategories</span>
+<span class="n">wiki</span><span class="o">.</span><span class="n">get_pages</span><span class="p">(</span><span class="s2">&quot;Art_collectors_by_nationality&quot;</span><span class="p">)</span>
+<span class="c1"># []</span>
+
+<span class="c1"># get pages from first level subcategories</span>
+<span class="n">wiki</span><span class="o">.</span><span class="n">get_pages</span><span class="p">(</span><span class="s2">&quot;Art_collectors_by_nationality&quot;</span><span class="p">,</span> <span class="n">get_subcats</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="c1"># [&#39;William Hayes Ackland&#39;,</span>
+<span class="c1">#  &#39;William Acquavella&#39;,</span>
+<span class="c1">#  &#39;Frederick Baldwin Adams Jr.&#39;,</span>
+<span class="c1">#  &#39;Marella Agnelli&#39;,</span>
+<span class="c1">#  &#39;Robert Agostinelli&#39;,</span>
+<span class="c1">#  ...]</span>
+</code></pre></div>
+
+<p>Recursively get pages from subcategories. This can be quite slow for deep
+subcategory trees and may break if loops are present.</p>
+
+<div class="pdoc-code codehilite"><pre><span></span><code><span class="n">wiki</span><span class="o">.</span><span class="n">get_pages</span><span class="p">(</span><span class="s2">&quot;Art_collectors_by_nationality&quot;</span><span class="p">,</span> 
+               <span class="n">get_subcats</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+               <span class="n">recursive</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="c1"># [&#39;Very&#39;,</span>
+<span class="c1">#  &#39;Long,</span>
+<span class="c1">#  &#39;List&#39;]</span>
+</code></pre></div>
+
+<p>Get pages from subcategories as a dictionary containing subcategories as keys.
+<code>'self'</code> contains the pages in the root category. Using <code>recursive</code> in
+combination with the <code>with_subcats</code> results in a nested dictionary.</p>
+
+<div class="pdoc-code codehilite"><pre><span></span><code><span class="c1"># get first level subcats in dict</span>
+<span class="n">wiki</span><span class="o">.</span><span class="n">get_pages</span><span class="p">(</span><span class="s2">&quot;Art_collectors_by_nationality&quot;</span><span class="p">,</span> 
+               <span class="n">get_subcats</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">with_subcats</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="c1"># {&#39;self&#39;: [],</span>
+<span class="c1">#  &#39;American art collectors&#39;: [&#39;William Hayes Ackland&#39;,</span>
+<span class="c1">#                              &#39;William Acquavella&#39;,</span>
+<span class="c1">#                              &#39;Frederick Baldwin Adams Jr.&#39;,</span>
+<span class="c1">#                              ...],</span>
+<span class="c1">#   ...</span>
+<span class="c1">#  &#39;Venezuelan art collectors&#39;: [&#39;Gustavo Cisneros&#39;,</span>
+<span class="c1">#                                &#39;Patricia Phelps de Cisneros&#39;,</span>
+<span class="c1">#                                &#39;Nina Fuentes&#39;],</span>
+<span class="c1">#  &#39;Yugoslav art collectors&#39;: [&#39;Antun Bauer (museologist)&#39;, &#39;Erich Šlomović&#39;]}</span>
+</code></pre></div>
+
+<h2 id="getting-sets">Getting sets</h2>
+
+<p>Get an intersection of 2 or more categories.</p>
+
+<div class="pdoc-code codehilite"><pre><span></span><code><span class="n">hp_wiki</span><span class="o">.</span><span class="n">get_set</span><span class="p">([</span><span class="s1">&#39;1980_births&#39;</span><span class="p">,</span> <span class="s1">&#39;Hogwarts_dropouts&#39;</span><span class="p">],</span> <span class="n">operation</span><span class="o">=</span><span class="s1">&#39;&amp;&#39;</span><span class="p">)</span>
+<span class="c1"># [&#39;Harry Potter&#39;, &#39;Ronald Weasley&#39;]</span>
+
+<span class="n">hp_wiki</span><span class="o">.</span><span class="n">get_set</span><span class="p">([</span><span class="s1">&#39;1980_births&#39;</span><span class="p">,</span> 
+                <span class="s1">&#39;Hogwarts_dropouts&#39;</span><span class="p">,</span> 
+                <span class="s1">&#39;Green-eyed_individuals&#39;</span><span class="p">],</span> 
+                <span class="n">operation</span><span class="o">=</span><span class="s1">&#39;intersection&#39;</span><span class="p">)</span>
+<span class="c1"># [&#39;Harry Potter&#39;]</span>
+</code></pre></div>
+
+<p>Get a union of 2 or more categories.</p>
+
+<div class="pdoc-code codehilite"><pre><span></span><code><span class="n">wiki</span> <span class="o">=</span> <span class="n">MediaWikiTools</span><span class="p">(</span><span class="s1">&#39;en.wikipedia.org&#39;</span><span class="p">)</span>
+
+<span class="n">wiki</span><span class="o">.</span><span class="n">get_set</span><span class="p">([</span><span class="s1">&#39;Countries in Asia&#39;</span><span class="p">,</span> <span class="s1">&#39;Countries_in_Europe&#39;</span><span class="p">],</span>
+                   <span class="n">operation</span><span class="o">=</span><span class="s1">&#39;or&#39;</span><span class="p">)</span>
+<span class="c1"># [&#39;Cyprus&#39;,</span>
+<span class="c1">#  &#39;Pakistan&#39;,</span>
+<span class="c1">#  &#39;Croatia&#39;,</span>
+<span class="c1">#   ...</span>
+<span class="c1">#  &#39;Belarus&#39;,</span>
+<span class="c1">#  &#39;Bangladesh&#39;,</span>
+<span class="c1">#  &#39;Lithuania&#39;]</span>
+</code></pre></div>
+
+<p>Chaining operations.</p>
+
+<div class="pdoc-code codehilite"><pre><span></span><code><span class="c1"># get the union of countries in Europe and Asia and save it</span>
+<span class="n">countries</span> <span class="o">=</span> <span class="n">wiki</span><span class="o">.</span><span class="n">get_set</span><span class="p">([</span><span class="s1">&#39;Countries in Asia&#39;</span><span class="p">,</span> <span class="s1">&#39;Countries_in_Europe&#39;</span><span class="p">],</span>
+                  <span class="n">operation</span><span class="o">=</span><span class="s1">&#39;union&#39;</span><span class="p">)</span>
+<span class="c1"># intersect the saved list with a different category</span>
+<span class="n">wiki</span><span class="o">.</span><span class="n">get_set</span><span class="p">(</span><span class="s1">&#39;Russian-speaking_countries_and_territories&#39;</span><span class="p">,</span> 
+            <span class="n">operation</span><span class="o">=</span><span class="s1">&#39;&amp;&#39;</span><span class="p">,</span> 
+            <span class="n">pages_list</span><span class="o">=</span><span class="n">countries</span><span class="p">)</span>
+<span class="c1"># [&#39;Kyrgyzstan&#39;,</span>
+<span class="c1">#  &#39;Moldova&#39;,</span>
+<span class="c1">#  &#39;Russia&#39;,</span>
+<span class="c1">#  &#39;Armenia&#39;,</span>
+<span class="c1">#  &#39;Tajikistan&#39;,</span>
+<span class="c1">#  &#39;Belarus&#39;,</span>
+<span class="c1">#  &#39;Azerbaijan&#39;,</span>
+<span class="c1">#  &#39;Uzbekistan&#39;,</span>
+<span class="c1">#  &#39;Mongolia&#39;,</span>
+<span class="c1">#  &#39;Kazakhstan&#39;]</span>
+</code></pre></div>
 </div>
 
                         <details>
             <summary>View Source</summary>
-            <div class="pdoc-code codehilite"><pre><span></span><span class="sd">&quot;&quot;&quot;MediaWiki Tools module. Contains all the code for this package.&quot;&quot;&quot;</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span class="sd">&quot;&quot;&quot;MediaWikiTools class module.</span>
+
+<span class="sd"># MediaWiki Tools</span>
+
+<span class="sd">A high level library containing set of tools for for filtering pages using the</span>
+<span class="sd">rich data available in MediaWikis such as categories and info boxes. Uses both</span>
+<span class="sd">web-scraping and API methods (where available and feasible) to gather </span>
+<span class="sd">information.</span>
+
+<span class="sd"># Basic Usage</span>
+
+<span class="sd">Create `MediaWikiTools` object:</span>
+
+<span class="sd">```python</span>
+<span class="sd">from mediawiki-tools import MediaWikiTools</span>
+
+<span class="sd">hp_wiki = MediaWikiTools(&#39;harrypotter.fandom.com&#39;)</span>
+<span class="sd">hp_wiki.has_api     # True</span>
+<span class="sd">```</span>
+
+<span class="sd">## Getting pages</span>
+
+<span class="sd">Get page names from a category.</span>
+
+<span class="sd">```python</span>
+<span class="sd">hp_wiki.get_pages(&#39;1980_births&#39;)</span>
+
+<span class="sd">#  [&#39;Dudley Dursley&#39;,</span>
+<span class="sd">#  &#39;Neville Longbottom&#39;,</span>
+<span class="sd">#  &#39;Ernest Macmillan&#39;,</span>
+<span class="sd">#  &#39;Draco Malfoy&#39;,</span>
+<span class="sd">#  &#39;Harry Potter&#39;,</span>
+<span class="sd">#  &#39;Ronald Weasley&#39;]</span>
+<span class="sd">```</span>
+
+<span class="sd">Get pages from subcategories too.</span>
+
+<span class="sd">```python</span>
+<span class="sd">wiki = MediaWikiTools(&#39;en.wikipedia.org&#39;)</span>
+
+<span class="sd"># get pages from category that contains only subcategories</span>
+<span class="sd">wiki.get_pages(&quot;Art_collectors_by_nationality&quot;)</span>
+<span class="sd"># []</span>
+
+<span class="sd"># get pages from first level subcategories</span>
+<span class="sd">wiki.get_pages(&quot;Art_collectors_by_nationality&quot;, get_subcats=True)</span>
+<span class="sd"># [&#39;William Hayes Ackland&#39;,</span>
+<span class="sd">#  &#39;William Acquavella&#39;,</span>
+<span class="sd">#  &#39;Frederick Baldwin Adams Jr.&#39;,</span>
+<span class="sd">#  &#39;Marella Agnelli&#39;,</span>
+<span class="sd">#  &#39;Robert Agostinelli&#39;,</span>
+<span class="sd">#  ...]</span>
+<span class="sd">```</span>
+
+<span class="sd">Recursively get pages from subcategories. This can be quite slow for deep</span>
+<span class="sd">subcategory trees and may break if loops are present.</span>
+
+<span class="sd">```python</span>
+<span class="sd">wiki.get_pages(&quot;Art_collectors_by_nationality&quot;, </span>
+<span class="sd">               get_subcats=True,</span>
+<span class="sd">               recursive=True)</span>
+<span class="sd"># [&#39;Very&#39;,</span>
+<span class="sd">#  &#39;Long,</span>
+<span class="sd">#  &#39;List&#39;]</span>
+<span class="sd">```</span>
+
+<span class="sd">Get pages from subcategories as a dictionary containing subcategories as keys.</span>
+<span class="sd">`&#39;self&#39;` contains the pages in the root category. Using `recursive` in</span>
+<span class="sd">combination with the `with_subcats` results in a nested dictionary.</span>
+
+<span class="sd">```python</span>
+<span class="sd"># get first level subcats in dict</span>
+<span class="sd">wiki.get_pages(&quot;Art_collectors_by_nationality&quot;, </span>
+<span class="sd">               get_subcats=True, with_subcats=True)</span>
+<span class="sd"># {&#39;self&#39;: [],</span>
+<span class="sd">#  &#39;American art collectors&#39;: [&#39;William Hayes Ackland&#39;,</span>
+<span class="sd">#                              &#39;William Acquavella&#39;,</span>
+<span class="sd">#                              &#39;Frederick Baldwin Adams Jr.&#39;,</span>
+<span class="sd">#                              ...],</span>
+<span class="sd">#   ...</span>
+<span class="sd">#  &#39;Venezuelan art collectors&#39;: [&#39;Gustavo Cisneros&#39;,</span>
+<span class="sd">#                                &#39;Patricia Phelps de Cisneros&#39;,</span>
+<span class="sd">#                                &#39;Nina Fuentes&#39;],</span>
+<span class="sd">#  &#39;Yugoslav art collectors&#39;: [&#39;Antun Bauer (museologist)&#39;, &#39;Erich Šlomović&#39;]}</span>
+<span class="sd">```</span>
+
+<span class="sd">## Getting sets</span>
+
+<span class="sd">Get an intersection of 2 or more categories.</span>
+
+<span class="sd">```python</span>
+<span class="sd">hp_wiki.get_set([&#39;1980_births&#39;, &#39;Hogwarts_dropouts&#39;], operation=&#39;&amp;&#39;)</span>
+<span class="sd"># [&#39;Harry Potter&#39;, &#39;Ronald Weasley&#39;]</span>
+
+<span class="sd">hp_wiki.get_set([&#39;1980_births&#39;, </span>
+<span class="sd">                &#39;Hogwarts_dropouts&#39;, </span>
+<span class="sd">                &#39;Green-eyed_individuals&#39;], </span>
+<span class="sd">                operation=&#39;intersection&#39;)</span>
+<span class="sd"># [&#39;Harry Potter&#39;]</span>
+<span class="sd">```</span>
+
+<span class="sd">Get a union of 2 or more categories.</span>
+
+<span class="sd">```python</span>
+<span class="sd">wiki = MediaWikiTools(&#39;en.wikipedia.org&#39;)</span>
+
+<span class="sd">wiki.get_set([&#39;Countries in Asia&#39;, &#39;Countries_in_Europe&#39;],</span>
+<span class="sd">	           operation=&#39;or&#39;)</span>
+<span class="sd"># [&#39;Cyprus&#39;,</span>
+<span class="sd">#  &#39;Pakistan&#39;,</span>
+<span class="sd">#  &#39;Croatia&#39;,</span>
+<span class="sd">#   ...</span>
+<span class="sd">#  &#39;Belarus&#39;,</span>
+<span class="sd">#  &#39;Bangladesh&#39;,</span>
+<span class="sd">#  &#39;Lithuania&#39;]</span>
+<span class="sd">```</span>
+
+<span class="sd">Chaining operations.</span>
+
+<span class="sd">```python</span>
+<span class="sd"># get the union of countries in Europe and Asia and save it</span>
+<span class="sd">countries = wiki.get_set([&#39;Countries in Asia&#39;, &#39;Countries_in_Europe&#39;],</span>
+<span class="sd">	          operation=&#39;union&#39;)</span>
+<span class="sd"># intersect the saved list with a different category</span>
+<span class="sd">wiki.get_set(&#39;Russian-speaking_countries_and_territories&#39;, </span>
+<span class="sd">            operation=&#39;&amp;&#39;, </span>
+<span class="sd">            pages_list=countries)</span>
+<span class="sd"># [&#39;Kyrgyzstan&#39;,</span>
+<span class="sd">#  &#39;Moldova&#39;,</span>
+<span class="sd">#  &#39;Russia&#39;,</span>
+<span class="sd">#  &#39;Armenia&#39;,</span>
+<span class="sd">#  &#39;Tajikistan&#39;,</span>
+<span class="sd">#  &#39;Belarus&#39;,</span>
+<span class="sd">#  &#39;Azerbaijan&#39;,</span>
+<span class="sd">#  &#39;Uzbekistan&#39;,</span>
+<span class="sd">#  &#39;Mongolia&#39;,</span>
+<span class="sd">#  &#39;Kazakhstan&#39;]</span>
+<span class="sd">```</span>
+<span class="sd">&quot;&quot;&quot;</span>
 </pre></div>
 
         </details>
