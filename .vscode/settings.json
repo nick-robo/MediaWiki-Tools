@@ -11,8 +11,12 @@
     "python.formatting.provider": "yapf",
     "editor.tabSize": 2,
     "cSpell.words": [
+        "Dursley",
+        "Longbottom",
+        "Malfoy",
         "mbox",
         "mwparserfromhell",
-        "ombox"
+        "ombox",
+        "Weasley"
     ]
 }
