@@ -393,7 +393,7 @@ class MediaWikiTools:
 					operation (str): Intersection ('intersection', 'i', 'and', '&') or union
 					('union', 'u', 'or', '|')
 				
-				operations (Union[list[str], str]): A single operation or 
+				operations (Union[list[str], str]): A single operation or
 					`len(categories)-1` operations to apply to categories
 
 				pages_list (list[str], optional): List of page to merge with queried ones
