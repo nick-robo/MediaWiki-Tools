@@ -147,3 +147,5 @@ wiki.get_set(['Countries in Asia',
 ```
 
 """
+
+from mediawikitools import MediaWikiTools

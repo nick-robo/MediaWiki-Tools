@@ -3,3 +3,5 @@
 cov.xml
 dist
 .secret
+
+*.egg-info
