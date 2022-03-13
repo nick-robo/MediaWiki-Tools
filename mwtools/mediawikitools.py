@@ -381,20 +381,24 @@ class MediaWikiTools:
 		return pages
 
 	def get_set(self,
-	            categories: Union[list[str], str],
-	            operation: str,
-	            pages_list: list[str] = [],
+	            categories: Union[list, str],
+	            operations: Union[list[str], str],
+	            pages_list: list[str] = None,
 	            get_subcats: bool = False,
 	            use_api: bool = True) -> list[str]:
 		"""Get a subset (or superset) of pages.
 
 		Args:
-				categories (Union[list[str], str]): String or list (str) of category names
+				categories (Union[list, str]): String or list of category names (or lists)
 					operation (str): Intersection ('intersection', 'i', 'and', '&') or union
 					('union', 'u', 'or', '|')
+				
+				operations (Union[list[str], str]): A single operation or 
+					`len(categories)-1` operations to apply to categories
 
 				pages_list (list[str], optional): List of page to merge with queried ones
-					using selected operation. Defaults to [].
+					using selected operation. Always last in order of operations. Defaults
+					to None. (Obsolete)
 
 				get_subcats (bool, optional): Get pages first level subcategories. Defaults
 					to False.
@@ -403,6 +407,10 @@ class MediaWikiTools:
 
 		Returns:
 				list[str]: List of pages resulting from the operations requested.
+
+		Note:
+			Set difference is not commutative. `categories` defines the order
+				of operations
 		"""
 		operation_dict = {
 		    'intersection': 'intersection_update',
@@ -412,15 +420,32 @@ class MediaWikiTools:
 		    'union': 'update',
 		    'u': 'update',
 		    'or': 'update',
-		    '|': 'update'
+		    '|': 'update',
+		    'not': 'difference_update',
+		    'difference': 'difference_update'
 		}
 
-		if operation not in operation_dict.keys():
-			raise Exception(f"Invalid operation: {operation} \
+		page_set = set()
+
+		# check if all the operations are valid
+		if not all(
+		    map(lambda x: x in operation_dict,
+		        operations if type(operations) == list else [operations])):
+			raise Exception(f"Invalid operation: {operations} \
 				chose from following: \n\t{operation_dict.keys()}")
 
-		page_set = set()
-		operator = operation_dict[operation]
+		if type(operations) == list:
+			# the first operation is always a union
+			operations = ['u'].extend(operations)
+			# check that the number of inputs equals the number of operations
+			assert (len(categories) + bool(pages_list)) == len(operations)
+			operators = []
+			for o in operations:
+				operators.append(operation_dict[o])
+		else:
+			operators = [operation_dict[operations]
+			             ] * (len(categories) - 1 + bool(pages_list))
+			operators[0] = 'update'
 
 		# edge cases
 		if not categories:
@@ -430,17 +455,13 @@ class MediaWikiTools:
 		elif type(categories) == str:
 			page_set.update(self.get_pages(categories, use_api=use_api))
 		else:
-			for category in categories:
-				if not page_set:
-					page_set.update(
-					    self.get_pages(category, get_subcats, use_api=use_api))
-					continue
-				getattr(page_set, operator)(self.get_pages(category,
-				                                           get_subcats,
-				                                           use_api=use_api))
+			for category, operator in zip(categories, operators):
+				getattr(page_set, operator)(
+				    category if type(category) == list else self.
+				    get_pages(category, get_subcats, use_api=use_api))
 
 		if pages_list:
-			getattr(page_set, operator)(pages_list)
+			getattr(page_set, operators[-1])(pages_list)
 
 		return list(page_set)
 

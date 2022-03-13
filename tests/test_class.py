@@ -156,29 +156,29 @@ def test_get_set():
 	assert ws.has_api
 
 	res_api = ws.get_set(['Countries in Asia', 'Countries_in_Europe'],
-	                     operation='union')
+	                     operations='union')
 
 	res_no_api = ws.get_set(['Countries in Asia', 'Countries_in_Europe'],
-	                        operation='union',
+	                        operations='union',
 	                        use_api=False)
 
 	assert_pagelist_equivalent(res_api, res_no_api)
 
 	res_api = ws.get_set(['Countries in Asia', 'Countries_in_Europe'],
-	                     operation='&')
+	                     operations='&')
 
 	res_no_api = ws.get_set(['Countries in Asia', 'Countries_in_Europe'],
-	                        operation='&',
+	                        operations='&',
 	                        use_api=False)
 
 	assert_pagelist_equivalent(res_api, res_no_api)
 
 	res_api = ws.get_set(['Countries in Asia', 'Countries_in_Europe'],
-	                     operation='&',
+	                     operations='&',
 	                     get_subcats=True)
 
 	res_no_api = ws.get_set(['Countries in Asia', 'Countries_in_Europe'],
-	                        operation='&',
+	                        operations='&',
 	                        get_subcats=True,
 	                        use_api=False)
 
