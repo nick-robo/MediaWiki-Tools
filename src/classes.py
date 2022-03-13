@@ -425,9 +425,9 @@ class MediaWikiTools:
 		if not categories:
 			raise Exception('Invalid argument')
 		elif len(categories) == 1:
-			page_set.update(self.get_pages(categories[0]), use_api=use_api)
+			page_set.update(self.get_pages(categories[0], use_api=use_api))
 		elif type(categories) == str:
-			page_set.update(self.get_pages(categories), use_api=use_api)
+			page_set.update(self.get_pages(categories, use_api=use_api))
 		else:
 			for category in categories:
 				if not page_set:
