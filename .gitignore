@@ -1,8 +1,6 @@
 .coverage
-.vscode/settings.json
-src/__pycache__/
-tests/__pycache__/
-.vscode/*
+*/__pycache__/
+.vscode
 cov.xml
 dist
 .secret
