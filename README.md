@@ -33,7 +33,7 @@ Question: Which countries in Asia use english as spoken Language?
 
 Answer:
 ```python
-import mwtools
+from mwtools import MediaWikiTools
 
 wiki = MediaWikiTools('en.wikipedia.org')
 
