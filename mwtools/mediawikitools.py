@@ -364,11 +364,6 @@ class MediaWikiTools:
 			# if input_link is a List
 			else:
 				raise NotImplementedError('This is broken')
-				content = data.find(id="mw-content-text")
-				links = [
-				    link.text for link in content.find_all('a')
-				    if len(link) == 1 and not link.get('class')
-				]
 
 			if with_subcats:
 				pages['self'] = links
