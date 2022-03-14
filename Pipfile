@@ -12,6 +12,7 @@ name = "testpypi"
 make_docs = "pdoc mwtools/ -d google -o docs/"
 build_package = "python3 -m build"
 pypi_push = "twine upload dist/*"
+get_coverage = "pytest --cov-report xml:cov.xml --cov mwtools"
 
 [packages]
 beautifulsoup4 = "*"

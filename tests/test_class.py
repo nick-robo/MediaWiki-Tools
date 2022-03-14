@@ -26,7 +26,7 @@ def assert_pagelist_equivalent(reslist1: list[str],
 	# TODO: Flexibly check whether get pages results are equivalent
 	# 			up to deletions and recent changes
 	assert set(reslist1) == set(reslist2), \
-                                      f'API and non-API results differ: \n\
+                                               f'API and non-API results differ: \n\
 					{DeepDiff(reslist1, reslist2, ignore_order=True)}'
 
 
@@ -56,9 +56,8 @@ def test_class_init_invalid(page):
 
 def test_class_get_pages():
 	wikis = [
-		'https://lgbt.wikia.org/wiki/Main_Page',
-		'https://en.uncyclopedia.co',
-		'https://harrypotter.fandom.com'
+	    'https://lgbt.wikia.org/wiki/Main_Page', 'https://en.uncyclopedia.co',
+	    'https://harrypotter.fandom.com'
 	]
 	for wiki in wikis:
 		if not requests.get(wiki, timeout=5).ok:
@@ -180,6 +179,15 @@ def test_get_set():
 	res_no_api = ws.get_set(['Countries in Asia', 'Countries_in_Europe'],
 	                        operations='&',
 	                        get_subcats=True,
+	                        use_api=False)
+
+	assert_pagelist_equivalent(res_api, res_no_api)
+
+	res_api = ws.get_set([res_api, 'Island countries', 'G20 nations'],
+	                     operations=['not', 'and'])
+
+	res_no_api = ws.get_set([res_no_api, 'Island countries', 'G20 nations'],
+	                        operations=['not', 'and'],
 	                        use_api=False)
 
 	assert_pagelist_equivalent(res_api, res_no_api)
