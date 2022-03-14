@@ -215,7 +215,7 @@ class MediaWikiTools:
 	              list_only: bool = False,
 	              use_api: bool = True,
 	              _base: bool = True) -> Union[list[str], dict]:
-		r"""Get the pages from a category or list of the wiki.
+		"""Get the pages from a category or list of the wiki.
 
 		Args:
 			input_link (str): Url or name of category or list.
