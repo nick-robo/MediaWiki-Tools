@@ -242,7 +242,7 @@ class MediaWikiTools:
 
 		Returns:
 			list[str] or dict: A list of pages.
-		
+
 		Note:
 			API and non-API methods may return different results based on
 				how recently the category/list page was updated. API mehtod
@@ -325,7 +325,7 @@ class MediaWikiTools:
 
 				# get pages from subcats
 				if (get_subcats
-				    or recursive) and (s := data.find(id='mw-subcategories')):
+				    	or recursive) and (s := data.find(id='mw-subcategories')):
 					for input_link in s.find_all('a'):
 						if (h := input_link.get('href')) and 'Category' in h:
 							pages_res = self.get_pages(
@@ -387,7 +387,7 @@ class MediaWikiTools:
 				categories (Union[list, str]): String or list of category names (or lists)
 					operation (str): Intersection ('intersection', 'i', 'and', '&') or union
 					('union', 'u', 'or', '|')
-				
+
 				operations (Union[list[str], str]): A single operation or
 					`len(categories)-1` operations to apply to categories
 
