@@ -58,13 +58,14 @@ class MediaWikiTools:
 			self.page_name = match.group(1) if match else None
 
 		# method 3: search landing page for link to main page
+		# TODO: This method is not safe.
 		if not self.page_name:
 			data = BeautifulSoup(page.text, 'html.parser')
 			r = [
 			    h for x in data.find_all('a')
-			    if (h := x.get('href')) and 'Main' in h
+			    if (h := x.get('href')) and 'Main' in h and "http" not in h
 			]
-			self.page_name = r[0].split('/')[0] if r else None
+			self.page_name = [x for x in r[0].split('/') if x][0] if r else None
 
 		# method 4: last ditch attempt
 		if not self.page_name:
