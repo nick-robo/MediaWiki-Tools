@@ -5,3 +5,4 @@ dist
 .secret
 
 *.egg-info
+.pdm-python

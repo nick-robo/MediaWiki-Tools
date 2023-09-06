@@ -1,3 +1,52 @@
 [build-system]
-requires = ["setuptools"]
-build-backend = "setuptools.build_meta"
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+[project]
+name = "MediaWiki-Tools"
+version = "0.1.0"
+description = "Tools for getting data from MediaWiki websites."
+authors = [
+    {name = "Nicholas Robertson", email = "nickrrrr@gmail.com"},
+]
+dependencies = [
+    "beautifulsoup4",
+    "requests",
+    "pymediawiki",
+]
+requires-python = ">=3.8"
+readme = "README.md"
+license = {text = "MIT"}
+
+[tool.pdm]
+[[tool.pdm.source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[[tool.pdm.source]]
+url = "https://test.pypi.org/simple/"
+verify_ssl = true
+name = "testpypi"
+
+[tool.pdm.dev-dependencies]
+dev = [
+    "ipython",
+    "ipykernel",
+    "flake8",
+    "deepdiff",
+    "pytest",
+    "flake8-tabs",
+    "yapf",
+    "pep8-naming",
+    "flake8-docstrings",
+    "flake8-rst-docstrings",
+    "pytest-cov",
+    "build",
+    "twine",
+    "pdoc",
+]
+
+[tool.pdm.scripts]
+make_docs = "pdoc mwtools/ -d google -o docs/"
+get_coverage = "pytest --cov-report xml:cov.xml --cov mwtools"
